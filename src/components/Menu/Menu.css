@@ -1,0 +1,19 @@
+.App-menu {
+    display: flex;
+    list-style-type: none;
+}
+
+.App-menu-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.App-menu .App-menu-item {
+    text-decoration: none;
+    padding: 1em 2em;
+    color: rgb(50, 51, 122);
+}
+
+.App-menu .App-menu-item.active {
+    font-weight: bold;
+}

@@ -1,0 +1,29 @@
+.App-sidebar {
+    display: flex;
+    flex-direction: column;
+}
+
+.App-sidebar__container {
+    padding: 1em;
+    max-width: 33vh;
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.App-sidebar__title {
+    text-transform: uppercase;
+    font-weight: lighter;
+    font-size: 3em;
+
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+.App-sidebar__lead {
+    text-transform: capitalize;
+    line-height: 1.5;
+    font-weight: bold;
+}

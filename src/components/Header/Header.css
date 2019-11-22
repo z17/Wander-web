@@ -1,0 +1,10 @@
+.App-header {
+    display: flex;
+    align-content: center;
+    justify-content: space-between;
+
+    padding-left: 1em;
+    padding-right: 1em;
+
+    box-shadow: 4px 0 4px rgb(233, 233, 243);
+}
