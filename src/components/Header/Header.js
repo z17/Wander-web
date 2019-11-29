@@ -3,9 +3,11 @@ import './Header.css';
 
 import {Menu} from '../Menu';
 
+import logo from '../../assets/images/app-logo.svg';
+
 const Header = () => (
     <header className="App-header">
-        <img src="https://via.placeholder.com/75" alt="Placeholder logo"/>
+        <img src={logo} alt="Wander logo"/>
         <Menu/>
     </header>
 );

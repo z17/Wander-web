@@ -10,10 +10,14 @@
 
 .App-menu .App-menu-item {
     text-decoration: none;
-    padding: 1em 2em;
-    color: rgb(50, 51, 122);
+    padding: 24px;
+    color: #33317e;
+
+    font-size: 18px;
+    line-height: 24px;
 }
 
 .App-menu .App-menu-item.active {
     font-weight: bold;
+    color: #4240a5;
 }

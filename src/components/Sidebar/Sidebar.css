@@ -1,10 +1,12 @@
 .App-sidebar {
     display: flex;
     flex-direction: column;
+
+    color: #33317e;
 }
 
 .App-sidebar__container {
-    padding: 1em;
+    padding: 24px;
     max-width: 33vh;
     height: 100%;
 
@@ -15,8 +17,9 @@
 
 .App-sidebar__title {
     text-transform: uppercase;
-    font-weight: lighter;
-    font-size: 3em;
+    font-weight: 300;
+    font-size: 56px;
+    letter-spacing: -1.24px;
 
     margin-top: 0.5em;
     margin-bottom: 0.5em;
@@ -24,6 +27,7 @@
 
 .App-sidebar__lead {
     text-transform: capitalize;
-    line-height: 1.5;
+    line-height: 24px;
     font-weight: bold;
+    font-size: 18px;
 }
