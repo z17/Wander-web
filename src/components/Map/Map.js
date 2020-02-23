@@ -2,28 +2,25 @@ import React from 'react';
 import './Map.css';
 
 import mapboxgl from 'mapbox-gl';
+import {default_lat, default_lon, default_zoom} from "../../models/Map";
 
 class Map extends React.Component {
     state = {
-        lat: 59.9402,
-        lon: 30.3154,
-        zoom: 12
+        lat: default_lat,
+        lon: default_lon,
+        zoom: default_zoom
     };
 
     map = {};
 
     objects = [];
-    pathPoints = [];
+    route = false;
 
     start = null;
     end = null;
 
     setMarker = (lat, lon) => {
         return this.createMark(lat, lon, 'App-map_marker_point');
-    };
-
-    setPathMarker = (lat, lon) => {
-        return this.createMark(lat, lon, 'App-map_marker_path');
     };
 
     setStartMark = (lat, lon) => {
@@ -34,8 +31,13 @@ class Map extends React.Component {
         this.start.getElement().addEventListener('click', (event) => {
             this.start.remove();
             this.start = null;
+            this.removeRoute();
             event.stopPropagation();
         });
+
+        if (this.end && this.start) {
+            this.buildRoute();
+        }
     };
 
     setEndMark = (lat, lon) => {
@@ -46,6 +48,7 @@ class Map extends React.Component {
         this.end.getElement().addEventListener('click', (event) => {
             this.end.remove();
             this.end = null;
+            this.removeRoute();
             event.stopPropagation();
         });
 
@@ -75,20 +78,8 @@ class Map extends React.Component {
         })
           .then(result => result.json())
           .then(result => {
-              console.log(result);
-
-              let pathPoints = [];
-              let parent = this;
-              result.points.forEach((point) => {
-                  pathPoints.push(parent.parseApiPoint(point))
-              });
-              let pathObjects = [];
-              result.objects.forEach((object) => {
-                  pathObjects.push(parent.parseApiObject(object))
-              });
-
-              this.updateObjects(pathObjects);
-              this.updateRoute(pathPoints);
+              let route = this.parseApiRoute(result);
+              this.updateRoute(route);
           });
     };
 
@@ -118,21 +109,42 @@ class Map extends React.Component {
         }
     };
 
-    resetPathPoints = () => {
-        this.pathPoints.forEach(function(point) {
-            point.marker.remove();
-        });
-        this.pathPoints = [];
+    parseApiRoute = (route) => {
+      return {
+          id: route.id,
+          length: route.length,
+          time: route.time,
+          name: route.name,
+          type: route.type,
+          points: route.points.map(this.parseApiPoint),
+          objects: route.objects.map(this.parseApiObject)
+      }
     };
 
-    updateRoute = (pathPointsData) => {
-        this.resetPathPoints();
+    removeRoute = () => {
+        if (this.route) {
+            this.resetMapObjects();
+            let old_route_map_id = 'route' + this.route.id;
+            this.map.removeLayer(old_route_map_id);
+            this.map.removeSource(old_route_map_id);
+            this.route = false;
+        }
+    };
+
+    updateRoute = (route) => {
+        this.removeRoute();
+
+        this.updateObjects(route.objects);
+
+        let points = route.points;
+        let route_map_id = 'route' + route.id;
 
         let coordinates = [];
-        pathPointsData.forEach((point) => {
+        points.forEach((point) => {
             coordinates.push([point.lon, point.lat]);
         });
-        this.map.addSource('route123', {
+
+        this.map.addSource(route_map_id, {
             'type': 'geojson',
             'data': {
                 'type': 'Feature',
@@ -144,9 +156,9 @@ class Map extends React.Component {
             }
         });
         this.map.addLayer({
-            'id': 'route123',
+            'id': route_map_id,
             'type': 'line',
-            'source': 'route123',
+            'source': route_map_id,
             'layout': {
                 'line-join': 'round',
                 'line-cap': 'round'
@@ -156,6 +168,8 @@ class Map extends React.Component {
                 'line-width': 2
             }
         });
+
+        this.route = route;
     };
 
     resetMapObjects = () => {
@@ -176,7 +190,7 @@ class Map extends React.Component {
         });
     };
 
-    updateMap = (bounds) => {
+    updateRandomObjects = (bounds) => {
         let southWest = bounds.getSouthWest();
         let northEast = bounds.getNorthEast();
         let stringBounds = '' + southWest.lat + ',' + southWest.lng + ';' + northEast.lat + ',' + northEast.lng + '?count=20';
@@ -200,7 +214,8 @@ class Map extends React.Component {
             zoom: this.state.zoom
         });
 
-        this.map.on('mouseup', () => {
+        this.map
+            .on('mouseup', () => {
             this.setState({
                 lon: this.map.getCenter().lng.toFixed(4),
                 lat: this.map.getCenter().lat.toFixed(4),
@@ -208,7 +223,9 @@ class Map extends React.Component {
             });
 
             let mapBounds = this.map.getBounds();
-            this.updateMap(mapBounds);
+            if (!this.route) {
+                this.updateRandomObjects(mapBounds);
+            }
         })
           .on('click', (data) => {
               if (!this.start) {
