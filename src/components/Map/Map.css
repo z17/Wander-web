@@ -25,3 +25,27 @@
 
     z-index: 1;
 }
+
+.App-map_marker_point, .App-map_marker_end, .App-map_marker_start, .App-map_marker_path {
+    background-size: cover;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.App-map_marker_point {
+    background-color: #ff0000;
+}
+
+.App-map_marker_end {
+    background-color: #00ff00;
+}
+
+.App-map_marker_start {
+    background-color: #0000ff;
+}
+
+.App-map_marker_path {
+    background-color: #000000;
+}

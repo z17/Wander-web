@@ -6,8 +6,7 @@ import * as serviceWorker from './serviceWorker';
 
 import mapboxgl from 'mapbox-gl';
 
-mapboxgl.accessToken = 'pk.' +
-    'eyJ1IjoibGFtYmRhY2FsY3VsdXMiLCJhIjoiY2szazJ4Z3hzMG1kdTNlcmt5NGJwcWNlaSJ9.On5uh0jPkUgvXBboE18r7g';
+mapboxgl.accessToken = 'pk.eyJ1Ijoiei0xNyIsImEiOiJjazZ1c3dkM2gwY2RkM2VueHh5bTdubTV6In0.3l6vnKrR964Fme8IPQ_eQA';
 
 ReactDOM.render(<App />, document.getElementById('root'));
 
