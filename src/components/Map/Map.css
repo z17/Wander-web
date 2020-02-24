@@ -26,7 +26,28 @@
     z-index: 1;
 }
 
-.App-map_marker_point, .App-map_marker_end, .App-map_marker_start, .App-map_marker_path {
+.App-map__menu {
+    position: absolute;
+    margin: 0 auto;
+    bottom: 0;
+    left: 0;
+    right:0;
+    width:300px;
+    text-align: center;
+    padding: 6px;
+    font-weight: bold;
+    z-index: 1;
+}
+
+.App-map__menu_button {
+    margin:0 10px;
+    padding: 16px;
+    background: #33317e;
+    color: #ffffff;
+    border: 0;
+}
+
+.App-map_marker_point, .App-map_marker_end, .App-map_marker_start, .App-map_marker_round {
     background-size: cover;
     width: 15px;
     height: 15px;
@@ -46,6 +67,6 @@
     background-color: #0000ff;
 }
 
-.App-map_marker_path {
+.App-map_marker_round {
     background-color: #000000;
 }

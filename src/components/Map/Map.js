@@ -8,7 +8,8 @@ class Map extends React.Component {
     state = {
         lat: default_lat,
         lon: default_lon,
-        zoom: default_zoom
+        zoom: default_zoom,
+        selected_position: false,
     };
 
     map = {};
@@ -18,19 +19,19 @@ class Map extends React.Component {
 
     start = null;
     end = null;
+    round = null;
 
     setMarker = (lat, lon) => {
         return this.createMark(lat, lon, 'App-map_marker_point');
     };
 
     setStartMark = (lat, lon) => {
-        if (this.start) {
-            this.start.remove();
-        }
+        this.removeStartMark();
+        this.removeRoundMark();
+
         this.start = this.createMark(lat, lon, 'App-map_marker_start');
         this.start.getElement().addEventListener('click', (event) => {
-            this.start.remove();
-            this.start = null;
+            this.removeStartMark();
             this.removeRoute();
             event.stopPropagation();
         });
@@ -41,13 +42,12 @@ class Map extends React.Component {
     };
 
     setEndMark = (lat, lon) => {
-        if (this.end) {
-            this.end.remove();
-        }
+        this.removeEndMark();
+        this.removeRoundMark();
+
         this.end = this.createMark(lat, lon, 'App-map_marker_end');
         this.end.getElement().addEventListener('click', (event) => {
-            this.end.remove();
-            this.end = null;
+            this.removeEndMark();
             this.removeRoute();
             event.stopPropagation();
         });
@@ -57,11 +57,46 @@ class Map extends React.Component {
         }
     };
 
+    removeStartMark = () => {
+        if (this.start) {
+            this.start.remove();
+            this.start = null;
+        }
+    };
+
+    removeEndMark = () => {
+        if (this.end) {
+            this.end.remove();
+            this.end = null;
+        }
+    };
+
+    removeRoundMark = () => {
+        if (this.round) {
+            this.round.remove();
+            this.round = null;
+        }
+    };
+
+    setRoundMark = (lat, lon) => {
+        this.removeEndMark();
+        this.removeStartMark();
+        this.removeRoundMark();
+
+        this.round = this.createMark(lat, lon, 'App-map_marker_round');
+        this.round.getElement().addEventListener('click', (event) => {
+            this.removeRoundMark();
+            this.removeRoute();
+            event.stopPropagation();
+        });
+        this.buildRoute();
+    };
+
     buildRoute = () => {
 
-        fetch('http://127.0.0.1:1323/api/routes/get', {
-            method: 'POST',
-            body: JSON.stringify({
+        let request = {};
+        if (this.start && this.end) {
+            request = {
                 points: [
                     {
                         lat: this.start.getLngLat().lat,
@@ -74,7 +109,24 @@ class Map extends React.Component {
 
                 ],
                 type: 'direct'
-            })
+            };
+        } else if (this.round) {
+            request = {
+                points: [
+                    {
+                        lat: this.round.getLngLat().lat,
+                        lon: this.round.getLngLat().lng,
+                    }
+
+                ],
+                radius: 1000,
+                type: 'round'
+            };
+        }
+
+        fetch('http://127.0.0.1:1323/api/routes/get', {
+            method: 'POST',
+            body: JSON.stringify(request)
         })
           .then(result => result.json())
           .then(result => {
@@ -206,6 +258,27 @@ class Map extends React.Component {
           });
     };
 
+    setStartPoint = () => {
+        this.setStartMark(this.state.selected_position.lat, this.state.selected_position.lng);
+        this.setState({
+            selected_position: false
+        });
+    };
+
+    setEndPoint = () => {
+        this.setEndMark(this.state.selected_position.lat, this.state.selected_position.lng);
+        this.setState({
+            selected_position: false
+        });
+    };
+
+    setRoundPoint = () => {
+        this.setRoundMark(this.state.selected_position.lat, this.state.selected_position.lng);
+        this.setState({
+            selected_position: false
+        });
+    };
+
     componentDidMount() {
         this.map = new mapboxgl.Map({
             container: this.mapContainer,
@@ -228,11 +301,9 @@ class Map extends React.Component {
             }
         })
           .on('click', (data) => {
-              if (!this.start) {
-                  this.setStartMark(data.lngLat.lat, data.lngLat.lng);
-              } else {
-                  this.setEndMark(data.lngLat.lat, data.lngLat.lng);
-              }
+              this.setState({
+                  selected_position: data.lngLat
+              });
           });
 
     }
@@ -243,6 +314,11 @@ class Map extends React.Component {
                 <div className="App-map__sidebar">
                     <div>Longitude: {this.state.lon} | Latitude: {this.state.lat} | Zoom: {this.state.zoom}</div>
                 </div>
+                {this.state.selected_position && <div className="App-map__menu">
+                    <button onClick={this.setStartPoint} className="App-map__menu_button">From</button>
+                    <button onClick={this.setEndPoint} className="App-map__menu_button">To</button>
+                    <button onClick={this.setRoundPoint} className="App-map__menu_button">Round</button>
+                </div>}
                 <div ref={el => this.mapContainer = el} className="App-map__container"/>
             </div>
         )
