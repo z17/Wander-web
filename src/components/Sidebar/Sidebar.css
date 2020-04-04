@@ -39,6 +39,7 @@
     padding: 16px;
     text-align: left;
     box-sizing: border-box;
+    cursor: pointer;
 }
 
 .App-sidebar__route_block_input {

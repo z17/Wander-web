@@ -1,8 +1,62 @@
 import React from 'react';
 import './Map.css';
+import {createStore, createEvent, merge, guard, createEffect} from 'effector'
+import {useStore} from 'effector-react'
+import {changedFromField, changedToField} from '../Sidebar';
 
 import mapboxgl from 'mapbox-gl';
 import {default_lat, default_lon, default_zoom} from "../../models/Map";
+
+const selectPositionEvent = createEvent('selectPosition');
+const setStartPointEvent = createEvent('setStartPoint');
+const setEndPointEvent = createEvent('setEndPoint');
+const setRoundPointEvent = createEvent('setRoundPoint');
+
+
+const mbxGeocoding = require('@mapbox/mapbox-sdk/services/geocoding');
+const geocodingService = mbxGeocoding({ accessToken: 'pk.eyJ1Ijoiei0xNyIsImEiOiJjazZ1c3dkM2gwY2RkM2VueHh5bTdubTV6In0.3l6vnKrR964Fme8IPQ_eQA' });
+
+const pointsStore = createStore({
+    selected: null,
+    start: null,
+    end: null,
+    round: null
+}).on(selectPositionEvent, (state, value) => {
+    return {
+        ...state,
+        selected: value
+    }
+}).on(setStartPointEvent, (state) => {
+    return {
+        ...state,
+        start: state.selected
+    }
+}).on(setEndPointEvent, (state) => {
+    return {
+        ...state,
+        end: state.selected
+    }
+}).on(setRoundPointEvent, (state) => {
+    return {
+        ...state,
+        round: state.selected
+    }
+});
+
+const merged = merge([setStartPointEvent, setEndPointEvent]);
+const hasStartAndEnd = pointsStore.map(({start, end}) => start !== undefined && end !== undefined);
+
+const fetchServer = createEffect();
+fetchServer.use(async(url) => {
+    console.log('hello');
+    console.log(url);
+});
+
+guard({
+    source: merged,
+    filter: hasStartAndEnd,
+    target: fetchServer
+});
 
 class Map extends React.Component {
     state = {
@@ -260,23 +314,19 @@ class Map extends React.Component {
 
     setStartPoint = () => {
         this.setStartMark(this.state.selected_position.lat, this.state.selected_position.lng);
-        this.setState({
-            selected_position: false
-        });
+
+        changedFromField('test');
+        selectPositionEvent(null);
     };
 
     setEndPoint = () => {
         this.setEndMark(this.state.selected_position.lat, this.state.selected_position.lng);
-        this.setState({
-            selected_position: false
-        });
+        selectPositionEvent(null);
     };
 
     setRoundPoint = () => {
         this.setRoundMark(this.state.selected_position.lat, this.state.selected_position.lng);
-        this.setState({
-            selected_position: false
-        });
+        selectPositionEvent(null);
     };
 
     componentDidMount() {
@@ -301,23 +351,39 @@ class Map extends React.Component {
             }
         })
           .on('click', (data) => {
-              this.setState({
-                  selected_position: data.lngLat
-              });
+              const lngLat = data.lngLat;
+              geocodingService.reverseGeocode({
+                  query: [lngLat.lng, lngLat.lat],
+                  types: ['address'],
+                  limit: 1,
+                  language: ['ru']
+              })
+                  .send()
+                  .then(response => {
+                      const match = response.body;
+                      let text = lngLat.lat + ' ' + lngLat.lng;
+                      if (match.features[0]) {
+                          text = match.features[0].place_name;
+                      }
+                      console.log(text);
+                      changedFromField(text);
+                  });
+              selectPositionEvent(lngLat);
           });
-
     }
 
     render() {
+        // const {selected} = useStore(pointsStore);
+        const selected = 1;
         return (
             <div className="App-map__wrapper">
                 <div className="App-map__sidebar">
                     <div>Longitude: {this.state.lon} | Latitude: {this.state.lat} | Zoom: {this.state.zoom}</div>
                 </div>
-                {this.state.selected_position && <div className="App-map__menu">
-                    <button onClick={this.setStartPoint} className="App-map__menu_button">From</button>
-                    <button onClick={this.setEndPoint} className="App-map__menu_button">To</button>
-                    <button onClick={this.setRoundPoint} className="App-map__menu_button">Round</button>
+                {selected && <div className="App-map__menu">
+                    <button onClick={setStartPointEvent} className="App-map__menu_button">From</button>
+                    <button onClick={setEndPointEvent} className="App-map__menu_button">To</button>
+                    <button onClick={setRoundPointEvent} className="App-map__menu_button">Round</button>
                 </div>}
                 <div ref={el => this.mapContainer = el} className="App-map__container"/>
             </div>
