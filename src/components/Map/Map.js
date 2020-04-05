@@ -1,20 +1,24 @@
 import React from 'react';
+import {createEffect, createEvent, createStore, forward, guard, merge} from 'effector'
+import {createGate, useStore} from 'effector-react'
+
 import './Map.css';
-import {createStore, createEvent, merge, guard, createEffect} from 'effector'
-import {useStore} from 'effector-react'
-import {changedFromField, changedToField} from '../Sidebar';
+import {changedFromField} from '../Sidebar';
 
 import mapboxgl from 'mapbox-gl';
-import {default_lat, default_lon, default_zoom} from "../../models/Map";
+import {default_lat, default_lon, default_zoom, mapbox_access_key} from "../../models/Map";
+import {apiParseObject, apiUrlGetFeatured} from "../../models/Api";
 
 const selectPositionEvent = createEvent('selectPosition');
 const setStartPointEvent = createEvent('setStartPoint');
 const setEndPointEvent = createEvent('setEndPoint');
 const setRoundPointEvent = createEvent('setRoundPoint');
-
+const mapPositionUpdatedEvent = createEvent('mapPositionUpdated');
+const mapBoundsUpdatedEvent = createEvent('mapBoundsUpdated');
+const updateRandomPointsEvent = createEvent('updateRandomPoints');
 
 const mbxGeocoding = require('@mapbox/mapbox-sdk/services/geocoding');
-const geocodingService = mbxGeocoding({ accessToken: 'pk.eyJ1Ijoiei0xNyIsImEiOiJjazZ1c3dkM2gwY2RkM2VueHh5bTdubTV6In0.3l6vnKrR964Fme8IPQ_eQA' });
+const geocodingService = mbxGeocoding({ accessToken: mapbox_access_key });
 
 const pointsStore = createStore({
     selected: null,
@@ -43,13 +47,143 @@ const pointsStore = createStore({
     }
 });
 
+const mapStore = createStore({});
+
+const mapPositionStore = createStore({
+    lat: default_lat,
+    lon: default_lon,
+    zoom: default_zoom,
+}).on(mapPositionUpdatedEvent, function (state, {lat, lon, zoom}) {
+    return {
+        ...state,
+        lat: lat,
+        lon: lon,
+        zoom: zoom
+    }
+});
+
+const Gate = createGate('gate with props');
+
+// const mapInitFx = createEffect();
+
+// let map;
+//
+// mapInitFx.use(async ({lat, lon, zoom}) => {
+//     map = new mapboxgl.Map({
+//         // container: this.mapContainer,
+//         container: 'map',
+//         style: 'mapbox://styles/mapbox/light-v10',
+//         center: [lon, lat],
+//         zoom
+//     });
+// });
+
+
+// sample({
+//     source: mapPositionStore,
+//     clock: Gate.open,
+//     target: mapInitFx,
+// });
+
+const getRandomPointsFx = createEffect();
+
+getRandomPointsFx.use(async (bounds) => {
+        let southWest = bounds.getSouthWest();
+        let northEast = bounds.getNorthEast();
+        const res = await fetch(apiUrlGetFeatured(southWest, northEast));
+        return res.json();
+    }
+);
+
+getRandomPointsFx.done.watch(({result}) => {
+    let points = [];
+    result.forEach((point) => {
+        points.push(apiParseObject(point))
+    });
+    updateRandomPointsEvent(points);
+});
+
+forward({
+    from: mapBoundsUpdatedEvent,
+    to: getRandomPointsFx,
+});
+
+
+mapStore.on(updateRandomPointsEvent, (state, points) => {
+    if (state.random_points) {
+        state.random_points.forEach(function (point) {
+            point.marker.remove();
+        });
+    }
+
+    const random_points = [];
+    points.forEach((object) => {
+        random_points.push({
+            data: object,
+            marker: createMark(object.lat, object.lon, 'App-map_marker_point').addTo(state.map)
+        });
+    });
+    return {...state, random_points: random_points}
+});
+
+const createMark = (lat, lon, className) => {
+    let mark = new mapboxgl.LngLat(lon, lat);
+    let el = document.createElement('div');
+    el.className = className;
+    return new mapboxgl.Marker(el)
+        .setLngLat(mark);
+};
+
+mapStore.on(Gate.open, (state, {lat, lon, zoom}) => {
+    const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/light-v10',
+        center: [lon, lat],
+        zoom
+    });
+
+    map.on('mouseup', () => {
+        mapPositionUpdatedEvent({
+            lat: map.getCenter().lat.toFixed(4),
+            lon: map.getCenter().lng.toFixed(4),
+            zoom: map.getZoom().toFixed(2)
+        });
+
+        let mapBounds = map.getBounds();
+        mapBoundsUpdatedEvent(mapBounds);
+    })
+    .on('click', (data) => {
+        console.log('click');
+        const lngLat = data.lngLat;
+        geocodingService.reverseGeocode({
+            query: [lngLat.lng, lngLat.lat],
+            types: ['address'],
+            limit: 1,
+            language: ['ru']
+        })
+            .send()
+            .then(response => {
+                const match = response.body;
+                let text = lngLat.lat + ' ' + lngLat.lng;
+                if (match.features[0]) {
+                    text = match.features[0].place_name;
+                }
+                console.log(text);
+                changedFromField(text);
+            });
+        selectPositionEvent(lngLat);
+    });
+
+    return {map};
+});
+
 const merged = merge([setStartPointEvent, setEndPointEvent]);
-const hasStartAndEnd = pointsStore.map(({start, end}) => start !== undefined && end !== undefined);
+const hasStartAndEnd = pointsStore.map(({start, end}) => {
+    return start !== null && end !== null
+});
 
 const fetchServer = createEffect();
-fetchServer.use(async(url) => {
-    console.log('hello');
-    console.log(url);
+fetchServer.use(async(url, ab, c) => {
 });
 
 guard({
@@ -58,7 +192,7 @@ guard({
     target: fetchServer
 });
 
-class Map extends React.Component {
+class Map2 extends React.Component {
     state = {
         lat: default_lat,
         lon: default_lon,
@@ -371,24 +505,29 @@ class Map extends React.Component {
               selectPositionEvent(lngLat);
           });
     }
+}
 
-    render() {
-        // const {selected} = useStore(pointsStore);
-        const selected = 1;
-        return (
+const Map = () => {
+    const selected = 1;
+
+    const positionStore = useStore(mapPositionStore);
+
+    return (
+        <React.Fragment>
+            <Gate {...positionStore}/>
             <div className="App-map__wrapper">
                 <div className="App-map__sidebar">
-                    <div>Longitude: {this.state.lon} | Latitude: {this.state.lat} | Zoom: {this.state.zoom}</div>
+                    <div>Longitude: {positionStore.lon} | Latitude: {positionStore.lat} | Zoom: {positionStore.zoom}</div>
                 </div>
                 {selected && <div className="App-map__menu">
                     <button onClick={setStartPointEvent} className="App-map__menu_button">From</button>
                     <button onClick={setEndPointEvent} className="App-map__menu_button">To</button>
                     <button onClick={setRoundPointEvent} className="App-map__menu_button">Round</button>
                 </div>}
-                <div ref={el => this.mapContainer = el} className="App-map__container"/>
+                <div id="map" className="App-map__container"/>
             </div>
-        )
-    }
-}
+        </React.Fragment>
+    )
+};
 
 export default Map;
