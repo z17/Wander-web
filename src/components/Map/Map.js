@@ -1,24 +1,24 @@
 import React from 'react';
-import {createEffect, createEvent, createStore, forward, guard, merge} from 'effector'
+import {createEffect, createEvent, createStore, forward, guard, merge, sample} from 'effector'
 import {createGate, useStore} from 'effector-react'
 
 import './Map.css';
-import {changedFromField} from '../Sidebar';
+import {sidebarSetField} from '../Sidebar';
 
 import mapboxgl from 'mapbox-gl';
-import {default_lat, default_lon, default_zoom, mapbox_access_key} from "../../models/Map";
+import {default_lat, default_lon, default_zoom} from "../../models/Map";
 import {apiParseObject, apiUrlGetFeatured} from "../../models/Api";
 
 const selectPositionEvent = createEvent('selectPosition');
 const setStartPointEvent = createEvent('setStartPoint');
+const setStartMarkerEvent = createEvent('setStartMarker');
 const setEndPointEvent = createEvent('setEndPoint');
+const setEndMarkerEvent = createEvent('setEndMarker');
 const setRoundPointEvent = createEvent('setRoundPoint');
+const setRoundMarkerEvent = createEvent('setRoundMarker');
 const mapPositionUpdatedEvent = createEvent('mapPositionUpdated');
 const mapBoundsUpdatedEvent = createEvent('mapBoundsUpdated');
 const updateRandomPointsEvent = createEvent('updateRandomPoints');
-
-const mbxGeocoding = require('@mapbox/mapbox-sdk/services/geocoding');
-const geocodingService = mbxGeocoding({ accessToken: mapbox_access_key });
 
 const pointsStore = createStore({
     selected: null,
@@ -30,20 +30,29 @@ const pointsStore = createStore({
         ...state,
         selected: value
     }
-}).on(setStartPointEvent, (state) => {
-    return {
-        ...state,
-        start: state.selected
+}).on(setStartMarkerEvent, (state, value) => {
+    if (state.start) {
+        state.start.remove();
     }
-}).on(setEndPointEvent, (state) => {
     return {
         ...state,
-        end: state.selected
+        start: value
     }
-}).on(setRoundPointEvent, (state) => {
+}).on(setEndMarkerEvent, (state, value) => {
+    if (state.end) {
+        state.end.remove();
+    }
     return {
         ...state,
-        round: state.selected
+        end: value
+    }
+}).on(setRoundMarkerEvent, (state, value) => {
+    if (state.round) {
+        state.round.remove();
+    }
+    return {
+        ...state,
+        round: value
     }
 });
 
@@ -64,26 +73,85 @@ const mapPositionStore = createStore({
 
 const Gate = createGate('gate with props');
 
-// const mapInitFx = createEffect();
+const createMark = (lat, lon, className, map) => {
+    let mark = new mapboxgl.LngLat(lon, lat);
+    let el = document.createElement('div');
+    el.className = className;
+    return new mapboxgl.Marker(el)
+        .setLngLat(mark)
+        .addTo(map);
+};
 
-// let map;
-//
-// mapInitFx.use(async ({lat, lon, zoom}) => {
-//     map = new mapboxgl.Map({
-//         // container: this.mapContainer,
-//         container: 'map',
-//         style: 'mapbox://styles/mapbox/light-v10',
-//         center: [lon, lat],
-//         zoom
-//     });
-// });
+const createStartPointFx = createEffect();
+const createEndPointFx = createEffect();
+const createRoundPointFx = createEffect();
 
+createStartPointFx.use((data) => {
+    const {mapStore, pointsStore} = data;
+    const startMarker = createMark(pointsStore.selected.lat, pointsStore.selected.lng, 'App-map_marker_start', mapStore.map);
+    startMarker.getElement().addEventListener('click', (event) => {
+        setStartMarkerEvent(null);
+        event.stopPropagation();
+    });
 
-// sample({
-//     source: mapPositionStore,
-//     clock: Gate.open,
-//     target: mapInitFx,
-// });
+    setRoundMarkerEvent(null);
+    setStartMarkerEvent(startMarker);
+    sidebarSetField({
+        lat: pointsStore.selected.lat,
+        lng: pointsStore.selected.lng,
+        field: 'from',
+    });
+});
+
+createEndPointFx.use((data) => {
+    const {mapStore, pointsStore} = data;
+    const endMarker = createMark(pointsStore.selected.lat, pointsStore.selected.lng, 'App-map_marker_end', mapStore.map);
+    endMarker.getElement().addEventListener('click', (event) => {
+        setEndMarkerEvent(null);
+        event.stopPropagation();
+    });
+
+    setRoundMarkerEvent(null);
+    setEndMarkerEvent(endMarker);
+    sidebarSetField({
+        lat: pointsStore.selected.lat,
+        lng: pointsStore.selected.lng,
+        field: 'to'
+    });
+});
+
+createRoundPointFx.use((data) => {
+    const {mapStore, pointsStore} = data;
+    const roundMarker = createMark(pointsStore.selected.lat, pointsStore.selected.lng, 'App-map_marker_round', mapStore.map);
+    roundMarker.getElement().addEventListener('click', (event) => {
+        setRoundMarkerEvent(null);
+        event.stopPropagation();
+    });
+
+    setStartMarkerEvent(null);
+    setEndMarkerEvent(null);
+    setRoundMarkerEvent(roundMarker);
+});
+
+sample({
+    source: {mapStore, pointsStore},
+    clock: setStartPointEvent,
+    target: createStartPointFx,
+});
+
+sample({
+    source: {mapStore, pointsStore},
+    clock: setEndPointEvent,
+    target: createEndPointFx,
+});
+
+sample({
+    source: {mapStore, pointsStore},
+    clock: setRoundPointEvent,
+    target: createRoundPointFx,
+});
+
+createStartPointFx.watch(console.log);
 
 const getRandomPointsFx = createEffect();
 
@@ -120,19 +188,11 @@ mapStore.on(updateRandomPointsEvent, (state, points) => {
     points.forEach((object) => {
         random_points.push({
             data: object,
-            marker: createMark(object.lat, object.lon, 'App-map_marker_point').addTo(state.map)
+            marker: createMark(object.lat, object.lon, 'App-map_marker_point', state.map)
         });
     });
     return {...state, random_points: random_points}
 });
-
-const createMark = (lat, lon, className) => {
-    let mark = new mapboxgl.LngLat(lon, lat);
-    let el = document.createElement('div');
-    el.className = className;
-    return new mapboxgl.Marker(el)
-        .setLngLat(mark);
-};
 
 mapStore.on(Gate.open, (state, {lat, lon, zoom}) => {
     const map = new mapboxgl.Map({
@@ -153,43 +213,28 @@ mapStore.on(Gate.open, (state, {lat, lon, zoom}) => {
         mapBoundsUpdatedEvent(mapBounds);
     })
     .on('click', (data) => {
-        console.log('click');
-        const lngLat = data.lngLat;
-        geocodingService.reverseGeocode({
-            query: [lngLat.lng, lngLat.lat],
-            types: ['address'],
-            limit: 1,
-            language: ['ru']
-        })
-            .send()
-            .then(response => {
-                const match = response.body;
-                let text = lngLat.lat + ' ' + lngLat.lng;
-                if (match.features[0]) {
-                    text = match.features[0].place_name;
-                }
-                console.log(text);
-                changedFromField(text);
-            });
-        selectPositionEvent(lngLat);
+        selectPositionEvent(data.lngLat);
     });
 
     return {map};
 });
 
-const merged = merge([setStartPointEvent, setEndPointEvent]);
+const merged = merge([setStartMarkerEvent, setEndMarkerEvent]);
 const hasStartAndEnd = pointsStore.map(({start, end}) => {
     return start !== null && end !== null
 });
 
-const fetchServer = createEffect();
-fetchServer.use(async(url, ab, c) => {
+const getDirectPathFx = createEffect();
+
+getDirectPathFx.use(async (url, ab, c) => {
+    console.log(url);
+    console.log(ab);
 });
 
 guard({
     source: merged,
     filter: hasStartAndEnd,
-    target: fetchServer
+    target: getDirectPathFx
 });
 
 class Map2 extends React.Component {
@@ -449,7 +494,6 @@ class Map2 extends React.Component {
     setStartPoint = () => {
         this.setStartMark(this.state.selected_position.lat, this.state.selected_position.lng);
 
-        changedFromField('test');
         selectPositionEvent(null);
     };
 
@@ -486,22 +530,6 @@ class Map2 extends React.Component {
         })
           .on('click', (data) => {
               const lngLat = data.lngLat;
-              geocodingService.reverseGeocode({
-                  query: [lngLat.lng, lngLat.lat],
-                  types: ['address'],
-                  limit: 1,
-                  language: ['ru']
-              })
-                  .send()
-                  .then(response => {
-                      const match = response.body;
-                      let text = lngLat.lat + ' ' + lngLat.lng;
-                      if (match.features[0]) {
-                          text = match.features[0].place_name;
-                      }
-                      console.log(text);
-                      changedFromField(text);
-                  });
               selectPositionEvent(lngLat);
           });
     }

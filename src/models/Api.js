@@ -9,7 +9,22 @@ export const apiParseObject = (object) => {
 };
 
 export const apiParseRoute = (route) => {
+    return {
+        id: route.id,
+        length: route.length,
+        time: route.time,
+        name: route.name,
+        type: route.type,
+        points: route.points.map(apiParsePoint),
+        objects: route.objects.map(apiParseObject)
+    }
+};
 
+export const apiParsePoint = (point) => {
+    return {
+        lat: point.lat,
+        lon: point.lon
+    }
 };
 
 export const apiUrlGetFeatured = (southWest, northEast) => {
