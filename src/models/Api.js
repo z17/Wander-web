@@ -1,3 +1,5 @@
+const api = 'http://127.0.0.1:1323/api/';
+
 export const apiParseObject = (object) => {
     return {
         id: object.id,
@@ -15,8 +17,8 @@ export const apiParseRoute = (route) => {
         time: route.time,
         name: route.name,
         type: route.type,
-        points: route.points.map(apiParsePoint),
-        objects: route.objects.map(apiParseObject)
+        points: route.points ? route.points.map(apiParsePoint) : [],
+        objects: route.objects ? route.objects.map(apiParseObject) : []
     }
 };
 
@@ -29,5 +31,9 @@ export const apiParsePoint = (point) => {
 
 export const apiUrlGetFeatured = (southWest, northEast) => {
     let stringBounds = '' + southWest.lat + ',' + southWest.lng + ';' + northEast.lat + ',' + northEast.lng + '?count=20';
-    return 'http://127.0.0.1:1323/api/objects/getFeatured/' + stringBounds;
+    return api + 'objects/getFeatured/' + stringBounds;
+};
+
+export const apiUrlGetPath = () => {
+    return api + 'routes/get';
 };
