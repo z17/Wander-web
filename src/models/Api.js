@@ -37,3 +37,34 @@ export const apiUrlGetFeatured = (southWest, northEast) => {
 export const apiUrlGetPath = () => {
     return api + 'routes/get';
 };
+
+export const apiBuildGetDirectPathRequest = (startLat, startLng, endLat, endLng) => {
+    return {
+        points: [
+            {
+                lat: startLat,
+                lon: startLng,
+            },
+            {
+                lat: endLat,
+                lon: endLng,
+            }
+
+        ],
+        type: 'direct'
+    };
+};
+
+export const apiBuildGetRoundPathRequest = (startLat, startLng) => {
+    return {
+        points: [
+            {
+                lat: startLat,
+                lon: startLng,
+            }
+
+        ],
+        radius: 1000,
+        type: 'round'
+    };
+};
