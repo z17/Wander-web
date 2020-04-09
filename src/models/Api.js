@@ -6,7 +6,9 @@ export const apiParseObject = (object) => {
         title: object.title,
         type: object.type,
         lat: object.position.lat,
-        lon: object.position.lon
+        lon: object.position.lon,
+        image: object.image,
+        description: object.description
     }
 };
 

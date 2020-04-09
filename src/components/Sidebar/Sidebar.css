@@ -1,13 +1,15 @@
 .App-sidebar {
     display: flex;
     flex-direction: column;
-    width: 350px;
+    width: 380px;
     color: #33317e;
+    position: relative;
+    height: 100%;
+    overflow: auto;
 }
 
 .App-sidebar__container {
-    padding: 24px;
-    height: 100%;
+    padding: 56px 24px 0 24px;
 
     display: flex;
     flex-direction: column;
@@ -19,9 +21,12 @@
     font-weight: 300;
     font-size: 56px;
     letter-spacing: -1.24px;
+    margin:0;
+}
 
-    margin-top: 0.5em;
-    margin-bottom: 0.5em;
+.App-sidebar__build_title {
+    font-weight: bold;
+    margin: 24px 0;
 }
 
 .App-sidebar__lead {
@@ -31,7 +36,7 @@
     font-size: 18px;
 }
 
-.App-sidebar__route_block_input, .App-sidebar__route_block_build {
+.App-sidebar__build_block_input, .App-sidebar__build_block_build {
     display: block;
     width: 100%;
     margin-bottom: 16px;
@@ -42,13 +47,97 @@
     cursor: pointer;
 }
 
-.App-sidebar__route_block_input {
+.App-sidebar__build_block_input {
     color: #33317e;
     border: 1px solid rgba(51, 49, 126, 0.24);
 }
 
-.App-sidebar__route_block_build {
+.App-sidebar__build_block_build {
     background: #33317e;
     color: #ffffff;
     border: 0;
+}
+
+.App-sidebar__footer-block {
+    /*position: absolute;*/
+    /*bottom: 16px;*/
+}
+
+.App-sidebar__route_header {
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 1.33;
+    color: #33317e;
+}
+
+.App-sidebar__route_container .App-sidebar__title {
+    font-size: 24px;
+    line-height: 1.17;
+    font-weight: bold;
+    text-transform: none;
+    margin: 48px 0 24px 0;
+}
+
+.App-sidebar__route_statistic {
+    border: solid 2px #e2e2f1;
+    padding: 12px 0;
+}
+
+.App-sidebar__route_statistic_part {
+    display: inline-block;
+    width: 32%;
+    text-align: center;
+    font-size: 22px;
+    font-weight: 900;
+    color:#33317e;
+}
+
+.App-sidebar__route_statistic_part:first-child {
+    border-right: solid 2px #e2e2f1;
+}
+
+.App-sidebar__route_statistic_part:last-child {
+    border-left: solid 2px #e2e2f1;
+}
+
+.App-sidebar__route_statistic_part_label {
+    font-weight: 300;
+    font-stretch: normal;
+    margin: 0;
+    font-size: 14px;
+    color: #4240a5;
+}
+
+.App-sidebar__route_points {
+    margin-top:50px;
+}
+.App-sidebar__route_points_title {
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.33;
+    color: #33317e;
+    margin-bottom: 16px;
+}
+
+.App-sidebar__route_points_point {
+    margin-bottom: 16px;
+}
+
+.App-sidebar__route_points_point:after {
+    clear: both;
+    content: '';
+    display: block;
+}
+
+.App-sidebar__route_points_point_image {
+    width: 112px;
+    height: 112px;
+    float: left;
+    padding-right: 17px;
+}
+
+.App-sidebar__route_points_point_title {
+    font-size: 18px;
+    font-weight: 500;
+    color: #33317e;
 }
