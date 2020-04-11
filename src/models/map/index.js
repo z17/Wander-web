@@ -1,14 +1,14 @@
 import {createEffect, createEvent} from "effector";
 
-export const setStartPointEvent = createEvent('setStartPoint');
-export const setEndPointEvent = createEvent('setEndPoint');
-export const setRoundPointEvent = createEvent('setRoundPoint');
+export const setStartPointEvent = createEvent();
+export const setEndPointEvent = createEvent();
+export const setRoundPointEvent = createEvent();
 
-export const setStartMarkerEvent = createEvent('setStartMarker');
-export const setEndMarkerEvent = createEvent('setEndMarker');
-export const setRoundMarkerEvent = createEvent('setRoundMarker');
+export const setStartMarkerEvent = createEvent();
+export const setEndMarkerEvent = createEvent();
+export const setRoundMarkerEvent = createEvent();
 
-export const mapBoundsUpdatedEvent = createEvent('mapBoundsUpdated');
+export const mapBoundsUpdatedEvent = createEvent();
 export const getRandomPointsFx = createEffect();
 export const drawLineFx = createEffect();
 
@@ -19,8 +19,8 @@ export const createObjectMarkersFx = createEffect();
 export const createRouteObjectMarkersFx = createEffect();
 export const removeRouteFromMapFx = createEffect();
 
-export const selectPositionEvent = createEvent('selectPosition');
-export const mapPositionUpdatedEvent = createEvent('mapPositionUpdated');
+export const selectPositionEvent = createEvent();
+export const mapPositionUpdatedEvent = createEvent();
 
 export const default_lat = 59.9402;
 export const default_lon = 30.3154;
