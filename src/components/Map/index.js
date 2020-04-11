@@ -1,3 +1,4 @@
 import Map from './Map';
+import {MapGate} from "./Map";
 
-export {Map};
+export {Map, MapGate};
