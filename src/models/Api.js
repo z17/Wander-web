@@ -110,11 +110,12 @@ export const apiGetPathMock = (positions) => {
         lon: end.lng,
     });
 
+    let id = Math.ceil(Math.random() * 1000);
     return {
-        id: 535,
+        id: id,
         length: 5324,
         time: 24 * 60 * 60,
-        name: 'Mocked route',
+        name: 'Mocked route ' + id,
         type: type,
         points: pathPoints,
         objects: objects
