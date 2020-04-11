@@ -1,10 +1,16 @@
-import {apiBuildGetDirectPathRequest, apiBuildGetRoundPathRequest, apiParseRoute, apiUrlGetPath} from "../Api";
+import {
+    apiBuildGetDirectPathRequest,
+    apiBuildGetRoundPathRequest,
+    apiGetPathMock,
+    apiParseRoute,
+    apiUrlGetPath
+} from "../Api";
 import {createRouteEvent, filledRoute, getDirectPathFx, removeRouteEvent, removeRouteMarkersFx} from './index'
 import {updateRandomPointsEvent} from "../objects";
 import {$route} from './state'
 import {$map} from "../map/state";
 import {createRouteObjectMarkersFx, drawLineFx, removeRouteFromMapFx} from "../map";
-import {sample} from "effector";
+import {forward, sample} from "effector";
 
 getDirectPathFx.use(async ({points}) => {
     let request = {};
@@ -24,6 +30,13 @@ getDirectPathFx.use(async ({points}) => {
     return result.json();
 });
 
+// todo: make guard with isDev filter
+forward({
+    from: getDirectPathFx.fail.map(({params}) => {
+        return {result: apiGetPathMock(params.points)}}),
+    to: getDirectPathFx.done
+});
+
 getDirectPathFx.done.watch(({result}) => {
     const route = apiParseRoute(result);
 
@@ -34,8 +47,6 @@ getDirectPathFx.done.watch(({result}) => {
 
 
 removeRouteMarkersFx.use((route) => {
-    console.log('removeRouteMarkersFx');
-    console.log(route);
     route.route_markers.forEach(function (point) {
         point.marker.remove();
     });

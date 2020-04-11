@@ -70,21 +70,18 @@ getRandomPointsFx.use(async (bounds) => {
     }
 );
 
-const getRandomPointsResult = (result) => {
+getRandomPointsFx.done.watch(({result}) => {
     let points = [];
     result.forEach((point) => {
         points.push(apiParseObject(point))
     });
     updateRandomPointsEvent(points);    // todo: call it by Forward, remove .watch
-};
-
-getRandomPointsFx.done.watch(({result}) => {
-    getRandomPointsResult(result);
 });
 
-getRandomPointsFx.fail.watch(({}) => {
-    const result = apiGetFeaturedMock();
-    getRandomPointsResult(result);
+// todo: make guard with isDev filter
+forward({
+    from: getRandomPointsFx.fail.map(() => ({result: apiGetFeaturedMock()})),
+    to: getRandomPointsFx.done
 });
 
 removeRouteFromMapFx.use(({map, route}) => {
