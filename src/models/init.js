@@ -1,0 +1,5 @@
+import './buildForm/init'
+import './map/init'
+import './objects/init'
+import './points/init'
+import './route/init'

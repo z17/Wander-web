@@ -1,4 +1,4 @@
 import Map from './Map';
-import {MapGate, createMap, createStartMark, createEndMark, createRoundMark, createPointMark, createRouteLine} from "./Map";
+import {MapGate} from "./Map";
 
-export {Map, MapGate, createMap, createStartMark, createEndMark, createRoundMark, createPointMark, createRouteLine};
+export {Map, MapGate};

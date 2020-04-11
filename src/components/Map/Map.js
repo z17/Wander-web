@@ -3,88 +3,28 @@ import {createGate, useStore} from 'effector-react'
 
 import './Map.css';
 
-import mapboxgl from 'mapbox-gl';
+
 import {
-    mapPositionStore,
-    pointsStore,
     setEndPointEvent,
     setRoundPointEvent,
     setStartPointEvent
-} from "../../models/Map";
+} from "../../models/map/index.js";
+import {$points} from "../../models/points/state";
+import {$mapSettings} from "../../models/map/state";
 
 export const MapGate = createGate('gate with props');
 
-const createMark = (lat, lon, className, map) => {
-    let mark = new mapboxgl.LngLat(lon, lat);
-    let el = document.createElement('div');
-    el.className = className;
-    return new mapboxgl.Marker(el)
-        .setLngLat(mark)
-        .addTo(map);
-};
-
-export const createPointMark = (lat, lon, map) => {
-    return createMark(lat, lon, 'App-map_marker_point', map)
-};
-
-export const createStartMark = (lat, lon, map) => {
-    return createMark(lat, lon, 'App-map_marker_start', map)
-};
-
-export const createEndMark = (lat, lon, map) => {
-    return createMark(lat, lon, 'App-map_marker_end', map)
-};
-
-export const createRoundMark = (lat, lon, map) => {
-    return createMark(lat, lon, 'App-map_marker_round', map)
-};
-
-export const createRouteLine = (map, route_map_id, coordinates) => {
-    map.addSource(route_map_id, {
-        'type': 'geojson',
-        'data': {
-            'type': 'Feature',
-            'properties': {},
-            'geometry': {
-                'type': 'LineString',
-                'coordinates': coordinates
-            }
-        }
-    });
-    map.addLayer({
-        'id': route_map_id,
-        'type': 'line',
-        'source': route_map_id,
-        'layout': {
-            'line-join': 'round',
-            'line-cap': 'round'
-        },
-        'paint': {
-            'line-color': '#33317e',
-            'line-width': 2
-        }
-    });
-};
-
-export const createMap = (lon, lat, zoom) => {
-    return new mapboxgl.Map({
-        container: 'map',
-        style: 'mapbox://styles/mapbox/light-v10',
-        center: [lon, lat],
-        zoom
-    });
-};
 
 const Map = () => {
-    const position = useStore(mapPositionStore);
-    const points = useStore(pointsStore);
+    const mapSettings = useStore($mapSettings);
+    const points = useStore($points);
 
     return (
         <React.Fragment>
-            <MapGate {...position}/>
+            <MapGate {...mapSettings}/>
             <div className="App-map__wrapper">
                 <div className="App-map__sidebar">
-                    <div>Longitude: {position.lon} | Latitude: {position.lat} | Zoom: {position.zoom}</div>
+                    <div>Longitude: {mapSettings.lon} | Latitude: {mapSettings.lat} | Zoom: {mapSettings.zoom}</div>
                 </div>
                 {points.selected && <div className="App-map__menu">
                     <button onClick={setStartPointEvent} className="App-map__menu_button">From</button>

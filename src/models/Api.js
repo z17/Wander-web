@@ -1,3 +1,5 @@
+import {default_lat, default_lon} from "./map";
+
 const api = 'http://127.0.0.1:1323/api/';
 
 export const apiParseObject = (object) => {
@@ -69,4 +71,29 @@ export const apiBuildGetRoundPathRequest = (startLat, startLng) => {
         radius: 1000,
         type: 'round'
     };
+};
+
+export const apiGetFeaturedMock = () => {
+    const min = 10;
+    const max = 50;
+    const count = Math.random() * (max - min) + min;
+    const points = [];
+    for (let i = 0; i < count; i++) {
+        const latDiff = Math.random() - 0.5;
+        const lonDiff = Math.random() - 0.5;
+        points.push(
+            {
+                id: i,
+                title: 'test',
+                type: 'museum',
+                position: {
+                    lat: default_lat + latDiff,
+                    lon: default_lon + lonDiff,
+                },
+                image: null,
+                description: 'test desc'
+            }
+        );
+    }
+    return points;
 };
