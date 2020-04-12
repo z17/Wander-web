@@ -2,6 +2,7 @@ import React from "react";
 import {useStore} from "effector-react";
 import {$route} from "../../models/route/state";
 import './Route.css'
+import {removeRouteEvent} from "../../models/route";
 
 const formatLength = (meters) => {
     return Number(meters / 1000).toFixed(1)
@@ -45,6 +46,7 @@ const Route = () => {
 
             <div className="App-sidebar__route_header">
                 Route #{route.id}
+                <div className="App-sidebar__route_reset" onClick={removeRouteEvent}>Сбросить</div>
             </div>
 
             <h1 className="App-sidebar__title">{route.name}</h1>

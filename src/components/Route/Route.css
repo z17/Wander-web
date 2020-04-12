@@ -1,4 +1,22 @@
 
+.App-sidebar__route_header {
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 1.33;
+    color: #33317e;
+    justify-content: space-between;
+    position: relative;
+    display: flex;
+}
+
+.App-sidebar__route_reset {
+    font-size: 14px;
+    font-weight: normal;
+    color: #6b6aa2;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
 .App-sidebar__route_container .App-sidebar__title {
     font-size: 24px;
     line-height: 1.17;

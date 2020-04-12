@@ -55,7 +55,10 @@
 }
 
 .App-map_marker_point {
-    background-color: #ff0000;
+    width: 40px;
+    height: 40px;
+    background: url("../../assets/icons/object-types/museum.png") no-repeat center #ffffff;
+    background-size: contain;
 }
 
 .App-map_marker_end {

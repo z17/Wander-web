@@ -6,14 +6,12 @@
     position: relative;
     height: 100%;
     overflow: auto;
+    flex-shrink: 0;
 }
 
 .App-sidebar__container {
     padding: 56px 24px 0 24px;
 
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
 }
 
 .App-sidebar__title {
@@ -34,11 +32,4 @@
 .App-sidebar__footer-block {
     /*position: absolute;*/
     /*bottom: 16px;*/
-}
-
-.App-sidebar__route_header {
-    font-size: 18px;
-    font-weight: bold;
-    line-height: 1.33;
-    color: #33317e;
 }
