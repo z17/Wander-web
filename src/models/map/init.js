@@ -18,11 +18,12 @@ import {$points, $routePositionsReady} from "../points/state";
 import {MapGate} from "../../components/Map";
 import {$map, $mapSettings} from "./state";
 import {$noRoute} from '../route/state'
+import {$config} from '../app/state';
 import mapboxgl from "mapbox-gl";
 
 import {createMapFx} from './index'
-import {apiGetFeaturedMock, apiParseObject, apiUrlGetFeatured} from "../Api";
-import {updateRandomPointsEvent} from "../objects";
+import {apiGetFeaturedMock} from "../Api";
+
 import {createMark} from "../points/init";
 
 createMapFx.use(({lat, lon, zoom}) => {
@@ -62,21 +63,18 @@ const createObjectMarkers = ({objects, map}) => {
 createRouteObjectMarkersFx.use(createObjectMarkers);
 createObjectMarkersFx.use(createObjectMarkers);
 
-getRandomPointsFx.use(async (bounds) => {
-        let southWest = bounds.getSouthWest();
-        let northEast = bounds.getNorthEast();
-        const res = await fetch(apiUrlGetFeatured(southWest, northEast));
-        return res.json();
-    }
-);
-
-getRandomPointsFx.done.watch(({result}) => {
-    let points = [];
-    result.forEach((point) => {
-        points.push(apiParseObject(point))
-    });
-    updateRandomPointsEvent(points);    // todo: call it by Forward, remove .watch
+getRandomPointsFx.use(async ({bounds, api}) => {
+    const {lat: SWlat, lng: SWlng} = bounds.getSouthWest();
+    const {lat: NElat, lng: NElng} = bounds.getNorthEast();
+    const boundsAsURLParams = `${SWlat},${SWlng};${NElat},${NElng}'?count=20`;
+    const res = await fetch(`${api}objects/getFeatured/${boundsAsURLParams}`);
+    return res.json();
 });
+
+forward({
+  from: getRandomPointsFx.doneData, [point[0], point[1]]
+  to: objectsParse //апи со многими объектами
+})
 
 // todo: make guard with isDev filter
 forward({
@@ -164,8 +162,9 @@ sample({
 });
 
 guard({
-    source: mapBoundsUpdatedEvent,
+    source: {config: $config, bounds: mapBoundsUpdatedEvent},
     filter: $noRoute,
+    fn: ({config, bounds}) => ({api: config.api, bounds}),
     target: getRandomPointsFx
 });
 
