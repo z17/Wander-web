@@ -1,7 +1,7 @@
 import {$map} from "../map/state";
 import {sample, forward} from "effector";
 import {$objects} from "./state";
-import {addObjects, removeObjectsFx, updateRandomPointsEvent} from "./index";
+import {addObjects, removeObjectsFx, updateRandomObjectsEvent} from "./index";
 import {createObjectMarkersFx} from "../map";
 
 removeObjectsFx.use(({objects, points}) => {
@@ -14,7 +14,7 @@ removeObjectsFx.use(({objects, points}) => {
 
 sample({
     source: $objects,
-    clock: updateRandomPointsEvent,
+    clock: updateRandomObjectsEvent,
     target: removeObjectsFx,
     fn: (source, clock) => ({objects: source, points: clock})
 });

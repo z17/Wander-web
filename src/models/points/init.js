@@ -1,6 +1,6 @@
 import {createStartPointFx, createEndPointFx, createRoundPointFx} from  "./"
 import mapboxgl from "mapbox-gl";
-import {forward, sample} from "effector"
+import {forward, sample, split} from "effector"
 import {$points} from "./state";
 import {
     setRoundMarkerEvent,
@@ -11,7 +11,7 @@ import {
 } from "../map";
 import {pathPositionsReady} from "./index";
 import {$map} from "../map/state";
-import {getDirectPathFx} from "../route";
+import {getPathFx} from "../route";
 
 export const createMark = (lat, lon, className, map) => {
     let mark = new mapboxgl.LngLat(lon, lat);
@@ -149,7 +149,44 @@ forward({
 });
 
 sample({
-    source: {points: $points, map: $map},
+    source: {points: $points, config: $config},
     clock: pathPositionsReady,
-    target: getDirectPathFx,
+    fn: ({points, map, config}) => ({points, api: config.api}),
+    target: resolvePathType,
+});
+
+const {resolvedDirectPath, resolvedRoundPath} = split(resolvePathType, {
+  resolvedDirectPath: ({points}) => points.start && points.end,
+  resolvedRoundPath: ({points}) => points.round
+})
+
+forward({
+  from: [
+    resolvedDirectPath.map(({points, api}) => {
+      const {lat, lng} = points.start.getLngLat();
+      const {lat: endLat, lng: endLng} = points.end.getLngLat();
+      return {
+        api,
+        points: [{
+            lat, lon
+          },
+          {
+            lat: endLat, lon: endLng,
+        }],
+        type: 'direct'
+      };
+    }),
+    resolvedRoundPath.map(({points, api}) => {
+      const {lat, lon} = points.round.getLngLat();
+      return {
+        api,
+        points: [{
+          lat, lon
+        }],
+        radius: 1000,
+        type: 'round'
+      };
+    })
+  ],
+  to: getPathFx
 });

@@ -1,50 +1,27 @@
-import {
-    apiBuildGetDirectPathRequest,
-    apiBuildGetRoundPathRequest,
-    apiGetPathMock,
-    apiParseRoute,
-    apiUrlGetPath
-} from "../Api";
-import {createRouteEvent, filledRoute, getDirectPathFx, removeRouteEvent, removeRouteMarkersFx} from './index'
-import {updateRandomPointsEvent} from "../objects";
+import {apiGetPathMock} from "../mocks";
+import {objectsParse} from '../app';
+import {createRouteEvent, filledRoute, getPathFx, removeRouteEvent, removeRouteMarkersFx} from './index'
+import {updateRandomObjectsEvent} from "../objects";
+import {pointsParse} from '../points';
 import {$route} from './state'
 import {$map} from "../map/state";
 import {createRouteObjectMarkersFx, drawLineFx, removeRouteFromMapFx} from "../map";
 import {forward, sample} from "effector";
 
-getDirectPathFx.use(async ({points}) => {
+getPathFx.use(async ({api, ...payload}) => {
     let request = {};
     if (points.start && points.end) {
-        const start = points.start.getLngLat();
-        const end = points.end.getLngLat();
-        request = apiBuildGetDirectPathRequest(start.lat, start.lng, end.lat, end.lng);
+
     } else if (points.round) {
         const round = points.round.getLngLat();
         request = apiBuildGetRoundPathRequest(round.lat, round.lng);
     }
-
-    const result =  await fetch(apiUrlGetPath(), {
+    const result =  await fetch(`${api}routes/get`, {
         method: 'POST',
-        body: JSON.stringify(request)
+        body: JSON.stringify(payload)
     });
     return result.json();
 });
-
-// todo: make guard with isDev filter
-forward({
-    from: getDirectPathFx.fail.map(({params}) => {
-        return {result: apiGetPathMock(params.points)}}),
-    to: getDirectPathFx.done
-});
-
-getDirectPathFx.done.watch(({result}) => {
-    const route = apiParseRoute(result);
-
-    updateRandomPointsEvent([]);
-    removeRouteEvent();
-    createRouteEvent(route);
-});
-
 
 removeRouteMarkersFx.use((route) => {
     route.route_markers.forEach(function (point) {
@@ -61,6 +38,31 @@ $route.on(removeRouteMarkersFx.done, () => {
     return {route, route_markers}
 });
 
+
+// todo: make guard with isDev filter
+forward({
+    from: getPathFx.fail.map(({params}) => {
+        return {result: apiGetPathMock(params.points)}}),
+    to: getPathFx.done
+});
+
+forward({
+  from: getPathFx.done.map(() => []),
+  to: [updateRandomObjectsEvent, removeRouteEvent]
+});
+
+forward({
+  from: getPathFx.doneData.map((route) => ({
+      id: route.id,
+      length: route.length,
+      time: route.time,
+      name: route.name,
+      type: route.type,
+      points: route.points ? pointsParse(route.points) : [],
+      objects: route.objects ? objectsParse(route.objects) : []
+  }),
+  to: createRouteEvent
+});
 
 sample({
     source: {map: $map, route: $route},

@@ -1,6 +1,6 @@
 import {createEffect, createEvent} from "effector";
 
-export const getDirectPathFx = createEffect();
+export const getPathFx = createEffect();
 export const createRouteEvent = createEvent();
 export const removeRouteEvent = createEvent();
 
