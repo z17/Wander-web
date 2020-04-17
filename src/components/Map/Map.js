@@ -1,5 +1,5 @@
 import React from 'react';
-import {createGate, useStore} from 'effector-react'
+import {useStore} from 'effector-react'
 
 import './Map.css';
 
