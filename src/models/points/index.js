@@ -12,3 +12,19 @@ export const pointsParsed = parsePoints.map((points) =>
     lon
   })
 );
+export const createMarkFx = createEffect();
+
+export const createdStartMark = attach({
+  effect: createMarkFx,
+  mapParams: (params) => ({className: 'App-map_marker_start', ...params})
+});
+
+export const createdEndMark = attach({
+  effect: createMarkFx,
+  mapParams: (params) => ({className: 'App-map_marker_end', ...params})
+});
+
+export const createdRoundMark = attach({
+  effect: createMarkFx,
+  mapParams: (params) => ({className: 'App-map_marker_round', ...params})
+});

@@ -1,6 +1,6 @@
 import {createStartPointFx, createEndPointFx, createRoundPointFx} from  "./"
 import mapboxgl from "mapbox-gl";
-import {forward, sample, split} from "effector"
+import {forward, sample, split, attach} from "effector"
 import {$points} from "./state";
 import {
     setRoundMarkerEvent,
@@ -9,62 +9,18 @@ import {
     mapInitPosition,
     selectPositionEvent
 } from "../map";
-import {pathPositionsReady} from "./index";
+import {pathPositionsReady, createMarkFx} from "./";
 import {$map} from "../map/state";
 import {getPathFx} from "../route";
 
-export const createMark = (lat, lon, className, map) => {
+createMarkFx.use((lat, lon, className, map) => {
     let mark = new mapboxgl.LngLat(lon, lat);
     let el = document.createElement('div');
     el.className = className;
     return new mapboxgl.Marker(el)
         .setLngLat(mark)
         .addTo(map);
-};
-
-const createStartMark = (lat, lon, map) => {
-    return createMark(lat, lon, 'App-map_marker_start', map)
-};
-
-const createEndMark = (lat, lon, map) => {
-    return createMark(lat, lon, 'App-map_marker_end', map)
-};
-
-const createRoundMark = (lat, lon, map) => {
-    return createMark(lat, lon, 'App-map_marker_round', map)
-};
-
-
-createStartPointFx.use(({map, points}) => {
-    const startMarker = createStartMark(points.selected.lat, points.selected.lng, map.map);
-    startMarker.getElement().addEventListener('click', (event) => {
-        setStartMarkerEvent(null);
-        event.stopPropagation();
-    });
-
-    return startMarker;
 });
-
-
-createEndPointFx.use(({map, points}) => {
-    const endMarker = createEndMark(points.selected.lat, points.selected.lng, map.map);
-    endMarker.getElement().addEventListener('click', (event) => {
-        setEndMarkerEvent(null);
-        event.stopPropagation();
-    });
-    return endMarker;
-
-});
-
-createRoundPointFx.use(({map, points}) => {
-    const roundMarker = createRoundMark(points.selected.lat, points.selected.lng, map.map);
-    roundMarker.getElement().addEventListener('click', (event) => {
-        setRoundMarkerEvent(null);
-        event.stopPropagation();
-    });
-    return roundMarker;
-});
-
 
 $points.on(selectPositionEvent, (state, value) => {
     return {
@@ -97,55 +53,48 @@ $points.on(selectPositionEvent, (state, value) => {
     }
 });
 
+const {createdStart, createdEnd, __: createdRound} = split(createMarkFx.done, {
+  createdStart: ({params}) => params.className === 'App-map_marker_start',
+  createdEnd: ({parasm}) => params.className === 'App-map_marker_end'
+})
 
 forward({
-    from: createStartPointFx.done.map(() => null),
-    to: setRoundMarkerEvent
+    from: [
+      createdStart.map(({result}) => result),
+      createdRound.map(() => null)
+    ],
+    to: setStartMarkerEvent
 });
 
 forward({
-    from: createStartPointFx.done.map(({result}) => result),
-    to: setStartMarkerEvent
+    from: [
+      createdEnd.map(({result}) => result),
+      createdRound.map(() => null)
+    ],
+    to: setEndMarkerEvent
+});
+
+forward({
+    from: [
+      createdRound.map(({result}) => result),
+      createdStart.map(() => null),
+      createdEnd.map(() => null)
+    ],
+    to: setRoundMarkerEvent
 });
 
 sample({
     source: $points,
-    clock: createStartPointFx.done,
+    clock: createdStart,
     target: mapInitPosition,
     fn: ({selected}) => ({lat: selected.lat, lng: selected.lng, field: 'from'}),
 });
 
-
-forward({
-    from: createEndPointFx.done.map(() => null),
-    to: setRoundMarkerEvent
-});
-
-forward({
-    from: createEndPointFx.done.map(({result}) => result),
-    to: setEndMarkerEvent
-});
-
 sample({
     source: $points,
-    clock: createEndPointFx.done,
+    clock: createdEnd,
     target: mapInitPosition,
     fn: ({selected}) => ({lat: selected.lat, lng: selected.lng, field: 'to'}),
-});
-
-
-forward({
-    from: createRoundPointFx.done.map(() => null),
-    to: setStartMarkerEvent
-});
-forward({
-    from: createRoundPointFx.done.map(() => null),
-    to: setEndMarkerEvent
-});
-
-forward({
-    from: createRoundPointFx.done.map(({result}) => result),
-    to: setRoundMarkerEvent
 });
 
 sample({
@@ -189,4 +138,27 @@ forward({
     })
   ],
   to: getPathFx
+});
+
+
+createdStart.watch((startMarker) => {
+    startMarker.getElement().addEventListener('click', (event) => {
+        setStartMarkerEvent(null);
+        event.stopPropagation();
+    });
+});
+
+
+createdEnd.watch((endMarker) => {
+    endMarker.getElement().addEventListener('click', (event) => {
+        setEndMarkerEvent(null);
+        event.stopPropagation();
+    });
+});
+
+createdRound.watch((roundMarker) => {
+    roundMarker.getElement().addEventListener('click', (event) => {
+        setRoundMarkerEvent(null);
+        event.stopPropagation();
+    });
 });
