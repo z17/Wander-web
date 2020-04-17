@@ -12,6 +12,10 @@ removeObjectsFx.use(({objects, points}) => {
     return points;
 });
 
+$objects.on(addObjects, (state, objects) => {
+    return objects
+});
+
 sample({
     source: $objects,
     clock: updateRandomObjectsEvent,
@@ -29,8 +33,4 @@ sample({
 forward({
     from: createObjectMarkersFx.doneData,
     to: addObjects
-});
-
-$objects.on(addObjects, (state, objects) => {
-    return objects
 });

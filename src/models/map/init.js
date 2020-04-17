@@ -13,7 +13,7 @@ import {
     removeRouteFromMapFx,
     drawLineFx, mapPositionUpdatedEvent, selectPositionEvent
 } from "./index";
-import {createEndPointFx, createRoundPointFx, createStartPointFx, pathPositionsReady} from "../points";
+import {createEndPointFx, createRoundPointFx, createdStartMark, createdEndMark, createdRoundMark, pathPositionsReady} from "../points";
 import {$points, $routePositionsReady} from "../points/state";
 import {MapGate} from "../../components/Map";
 import {$map, $mapSettings} from "./state";
@@ -43,8 +43,8 @@ createMapFx.use(({lat, lon, zoom}) => {
 
         mapBoundsUpdatedEvent(map.getBounds());
     }).on('click', (data) => {
-            selectPositionEvent(data.lngLat);
-        });
+        selectPositionEvent(data.lngLat);
+    });
 
     return {map}
 });
@@ -53,6 +53,7 @@ const createPointMark = (lat, lon, map) => {
     return createMark(lat, lon, 'App-map_marker_point', map)
 };
 
+//уложить в дату-флоу это
 const createObjectMarkers = ({objects, map}) => {
     return objects.map((object) => {
         const {lat, lon} = object;
@@ -143,22 +144,26 @@ forward({
 });
 
 
+// эти три сэмлпа можно заменить прямым вызовом
 sample({
     source: {map: $map, points: $points},
     clock: setStartPointEvent,
-    target: createStartPointFx,
+    fn: ({map, points}) => ({lat: points.selected.lat, lng: point.selected.lng, map}),
+    target: createdStartMark
 });
 
 sample({
     source: {map: $map, points: $points},
     clock: setEndPointEvent,
-    target: createEndPointFx,
+    fn: ({map, points}) => ({lat: points.selected.lat, lng: point.selected.lng, map}),
+    target: createdEndMark,
 });
 
 sample({
     source: {map: $map, points: $points},
     clock: setRoundPointEvent,
-    target: createRoundPointFx,
+    fn: ({map, points}) => ({lat: points.selected.lat, lng: point.selected.lng, map}),
+    target: createdRoundMark,
 });
 
 guard({
