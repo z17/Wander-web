@@ -53,9 +53,10 @@ $points.on(selectPositionEvent, (state, value) => {
     }
 });
 
-const {createdStart, createdEnd, __: createdRound} = split(createMarkFx.done, {
+const {createdStart, createdEnd, createdPoint, __: createdRound} = split(createMarkFx.done, {
   createdStart: ({params}) => params.className === 'App-map_marker_start',
-  createdEnd: ({parasm}) => params.className === 'App-map_marker_end'
+  createdEnd: ({parasm}) => params.className === 'App-map_marker_end',
+  createdPoint: ({params}) => params.className === 'App-map_marker_point'
 })
 
 forward({

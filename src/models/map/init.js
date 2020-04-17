@@ -1,28 +1,32 @@
 import {guard, merge, sample, forward} from "effector";
+import mapboxgl from "mapbox-gl";
 import {
-    setEndPointEvent,
-    setRoundPointEvent,
-    setStartPointEvent,
-    createObjectMarkersFx,
-    createRouteObjectMarkersFx,
-    mapBoundsUpdatedEvent,
-    getRandomPointsFx,
-    setStartMarkerEvent,
-    setEndMarkerEvent,
-    setRoundMarkerEvent,
-    removeRouteFromMapFx,
-    drawLineFx, mapPositionUpdatedEvent, selectPositionEvent
+  createMapFx,
+  setEndPointEvent,
+  setRoundPointEvent,
+  setStartPointEvent,
+  createObjectMarkersFx,
+  createRouteObjectMarkersFx,
+  mapBoundsUpdatedEvent,
+  getRandomPointsFx,
+  setStartMarkerEvent,
+  setEndMarkerEvent,
+  setRoundMarkerEvent,
+  removeRouteFromMapFx,
+  drawLineFx,
+  mapPositionUpdatedEvent,
+  selectPositionEvent,
+  MapGate
 } from "./index";
-import {createEndPointFx, createRoundPointFx, createdStartMark, createdEndMark, createdRoundMark, pathPositionsReady} from "../points";
+import {
+  createEndPointFx, createRoundPointFx, createdStartMark, createdEndMark,
+  createdRoundMark, createdPointMark, pathPositionsReady
+} from "../points";
 import {$points, $routePositionsReady} from "../points/state";
-import {MapGate} from "../../components/Map";
 import {$map, $mapSettings} from "./state";
 import {$noRoute} from '../route/state'
 import {$config} from '../app/state';
-import mapboxgl from "mapbox-gl";
-
-import {createMapFx} from './index'
-import {apiGetFeaturedMock} from "../Api";
+import {apiGetFeaturedMock} from "../mocks";
 
 import {createMark} from "../points/init";
 
@@ -49,15 +53,10 @@ createMapFx.use(({lat, lon, zoom}) => {
     return {map}
 });
 
-const createPointMark = (lat, lon, map) => {
-    return createMark(lat, lon, 'App-map_marker_point', map)
-};
-
-//уложить в дату-флоу это
 const createObjectMarkers = ({objects, map}) => {
     return objects.map((object) => {
         const {lat, lon} = object;
-        return {data: object, marker: createPointMark(lat, lon, map)}
+        return {data: object, marker: createdPoint(lat, lon, map)}
     });
 };
 
@@ -72,34 +71,10 @@ getRandomPointsFx.use(async ({bounds, api}) => {
     return res.json();
 });
 
-forward({
-  from: getRandomPointsFx.doneData, [point[0], point[1]]
-  to: objectsParse //апи со многими объектами
-})
-
-// todo: make guard with isDev filter
-forward({
-    from: getRandomPointsFx.fail.map(() => ({result: apiGetFeaturedMock()})),
-    to: getRandomPointsFx.done
-});
-
 removeRouteFromMapFx.use(({map, route}) => {
     let old_route_map_id = 'route' + route.id;
     map.removeLayer(old_route_map_id);
     map.removeSource(old_route_map_id);
-});
-
-$map.on(createMapFx.done, (state, {result: {map}}) => {
-    return {map};
-});
-
-$mapSettings.on(mapPositionUpdatedEvent, function (state, {lat, lon, zoom}) {
-    return {
-        ...state,
-        lat: lat,
-        lon: lon,
-        zoom: zoom
-    }
 });
 
 drawLineFx.use(({map, route_map_id, coordinates}) => {
@@ -130,6 +105,29 @@ drawLineFx.use(({map, route_map_id, coordinates}) => {
 
 });
 
+$map.on(createMapFx.done, (state, {result: {map}}) => {
+    return {map};
+});
+
+$mapSettings.on(mapPositionUpdatedEvent, function (state, {lat, lon, zoom}) {
+    return {
+        ...state,
+        lat: lat,
+        lon: lon,
+        zoom: zoom
+    }
+});
+
+forward({
+  from: getRandomPointsFx.doneData, [point[0], point[1]]
+  to: objectsParse //апи со многими объектами
+})
+
+// todo: make guard with isDev filter
+forward({
+    from: getRandomPointsFx.fail.map(() => ({result: apiGetFeaturedMock()})),
+    to: getRandomPointsFx.done
+});
 
 forward({
     from: MapGate.open,
