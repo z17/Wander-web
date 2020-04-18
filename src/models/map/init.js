@@ -1,10 +1,11 @@
-import {guard, merge, sample, forward} from "effector";
+import {guard, merge, sample, forward, attach} from "effector";
 import mapboxgl from "mapbox-gl";
 import {
   createMapFx,
   setEndPointEvent,
   setRoundPointEvent,
   setStartPointEvent,
+  setPoint,
   createObjectMarkersFx,
   createRouteObjectMarkersFx,
   mapBoundsUpdatedEvent,
@@ -20,11 +21,12 @@ import {
 } from "./index";
 import {
   createEndPointFx, createRoundPointFx, createdStartMark, createdEndMark,
-  createdRoundMark, createdPointMark, pathPositionsReady
+  createdRoundMark, createdPointMark, pathPositionsReady, createMarkFx
 } from "../points";
 import {$points, $routePositionsReady} from "../points/state";
 import {$map, $mapSettings} from "./state";
-import {$noRoute} from '../route/state'
+import {$noRoute} from '../route/state';
+import {objectsParse} from '../app';
 import {$config} from '../app/state';
 import {apiGetFeaturedMock} from "../mocks";
 
@@ -56,7 +58,7 @@ createMapFx.use(({lat, lon, zoom}) => {
 const createObjectMarkers = ({objects, map}) => {
     return objects.map((object) => {
         const {lat, lon} = object;
-        return {data: object, marker: createdPoint(lat, lon, map)}
+          return {data: object, marker: createdPointMark(lat, lon, map)}
     });
 };
 
@@ -119,8 +121,8 @@ $mapSettings.on(mapPositionUpdatedEvent, function (state, {lat, lon, zoom}) {
 });
 
 forward({
-  from: getRandomPointsFx.doneData, [point[0], point[1]]
-  to: objectsParse //апи со многими объектами
+  from: getRandomPointsFx.doneData,
+  to: objectsParse
 })
 
 // todo: make guard with isDev filter
@@ -141,27 +143,15 @@ forward({
     to: mapBoundsUpdatedEvent
 });
 
-
-// эти три сэмлпа можно заменить прямым вызовом
-sample({
-    source: {map: $map, points: $points},
-    clock: setStartPointEvent,
-    fn: ({map, points}) => ({lat: points.selected.lat, lng: point.selected.lng, map}),
-    target: createdStartMark
+const createdMark = attach({
+  source: {map: $map, points: $points},
+  effect: createMarkFx,
+  mapParams: (type, {points, map}) => ({className: `App-map_marker_${type}`, map, ...points.selected})
 });
 
-sample({
-    source: {map: $map, points: $points},
-    clock: setEndPointEvent,
-    fn: ({map, points}) => ({lat: points.selected.lat, lng: point.selected.lng, map}),
-    target: createdEndMark,
-});
-
-sample({
-    source: {map: $map, points: $points},
-    clock: setRoundPointEvent,
-    fn: ({map, points}) => ({lat: points.selected.lat, lng: point.selected.lng, map}),
-    target: createdRoundMark,
+forward({
+  from: setPoint,
+  to: createdMark
 });
 
 guard({

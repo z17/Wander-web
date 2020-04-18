@@ -2,6 +2,7 @@ import {createStartPointFx, createEndPointFx, createRoundPointFx} from  "./"
 import mapboxgl from "mapbox-gl";
 import {forward, sample, split, attach} from "effector"
 import {$points} from "./state";
+import {$config} from '../app/state';
 import {
     setRoundMarkerEvent,
     setStartMarkerEvent,
@@ -9,7 +10,7 @@ import {
     mapInitPosition,
     selectPositionEvent
 } from "../map";
-import {pathPositionsReady, createMarkFx} from "./";
+import {pathPositionsReady, createMarkFx, resolvePathType} from "./";
 import {$map} from "../map/state";
 import {getPathFx} from "../route";
 
@@ -55,7 +56,7 @@ $points.on(selectPositionEvent, (state, value) => {
 
 const {createdStart, createdEnd, createdPoint, __: createdRound} = split(createMarkFx.done, {
   createdStart: ({params}) => params.className === 'App-map_marker_start',
-  createdEnd: ({parasm}) => params.className === 'App-map_marker_end',
+  createdEnd: ({params}) => params.className === 'App-map_marker_end',
   createdPoint: ({params}) => params.className === 'App-map_marker_point'
 })
 
@@ -113,8 +114,8 @@ const {resolvedDirectPath, resolvedRoundPath} = split(resolvePathType, {
 forward({
   from: [
     resolvedDirectPath.map(({points, api}) => {
-      const {lat, lng} = points.start.getLngLat();
-      const {lat: endLat, lng: endLng} = points.end.getLngLat();
+      const {lat, lon} = points.start.getLngLat();
+      const {lat: endLat, lon: endLng} = points.end.getLngLat();
       return {
         api,
         points: [{

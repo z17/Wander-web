@@ -1,8 +1,10 @@
 import {createEffect, createEvent} from "effector";
+import {createGate} from 'effector-react';
 
 export const setStartPointEvent = createEvent();
 export const setEndPointEvent = createEvent();
 export const setRoundPointEvent = createEvent();
+export const setPoint = createEvent();
 
 export const setStartMarkerEvent = createEvent();
 export const setEndMarkerEvent = createEvent();

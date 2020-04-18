@@ -1,7 +1,7 @@
 import {forward} from 'effector';
 
-import {objectsParsed, setConfig} from '../';
-import {$config} from '../state';
+import {objectsParsed, setConfig} from './';
+import {$config} from './state';
 import {updateRandomObjectsEvent} from "../objects";
 
 $config.on(setConfig, () => ({
