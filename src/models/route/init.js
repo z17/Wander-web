@@ -1,5 +1,4 @@
 import {apiGetPathMock} from "../mocks";
-import {objectsParse} from '../app';
 import {createRouteEvent, filledRoute, getPathFx, removeRouteEvent, removeRouteMarkersFx} from './index'
 import {updateRandomObjectsEvent} from "../objects";
 import {pointsParse} from '../points';
@@ -9,13 +8,6 @@ import {createRouteObjectMarkersFx, drawLineFx, removeRouteFromMapFx} from "../m
 import {forward, sample} from "effector";
 
 getPathFx.use(async ({api, ...payload}) => {
-    let request = {};
-    if (points.start && points.end) {
-
-    } else if (points.round) {
-        const round = points.round.getLngLat();
-        request = apiBuildGetRoundPathRequest(round.lat, round.lng);
-    }
     const result =  await fetch(`${api}routes/get`, {
         method: 'POST',
         body: JSON.stringify(payload)
@@ -52,14 +44,33 @@ forward({
 });
 
 forward({
-  from: getPathFx.doneData.map((route) => ({
+  from: getPathFx.doneData.map((route) => {
+    const points = route.points || route.points.map(({lat, lon}) => {
+      return {
+        lat,
+        lon
+      };
+    });
+    const objects = route.objects || route.objects.map((object) => {
+      return {
+        id: object.id,
+        title: object.title,
+        type: object.type,
+        lat: object.position.lat,
+        lon: object.position.lon,
+        image: object.image,
+        description: object.description
+      };
+    });
+    return {
+      points,
+      objects,
       id: route.id,
       length: route.length,
       time: route.time,
       name: route.name,
       type: route.type,
-      points: route.points ? pointsParse(route.points) : [],
-      objects: route.objects ? objectsParse(route.objects) : []
+    };
   }),
   to: createRouteEvent
 });

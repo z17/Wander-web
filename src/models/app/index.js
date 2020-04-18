@@ -1,8 +1,10 @@
+import {createEvent} from 'effector';
 
 export const setConfig = createEvent();
 export const objectsParse = createEvent();
 
-export const objectsParsed = objectsParse.map((objects) => objects.map((object) => ({
+export const objectsParsed = objectsParse.map((objects) => objects.map((object) => {
+  return {
         id: object.id,
         title: object.title,
         type: object.type,
@@ -10,4 +12,5 @@ export const objectsParsed = objectsParse.map((objects) => objects.map((object) 
         lon: object.position.lon,
         image: object.image,
         description: object.description
+  }
 }));
