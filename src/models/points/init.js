@@ -14,8 +14,8 @@ import {pathPositionsReady, createMarkFx, resolvePathType} from "./";
 import {$map} from "../map/state";
 import {getPathFx} from "../route";
 
-createMarkFx.use((lat, lon, className, map) => {
-    let mark = new mapboxgl.LngLat(lon, lat);
+createMarkFx.use(({lat, lng, className, map}) => {
+    let mark = new mapboxgl.LngLat(lng, lat);
     let el = document.createElement('div');
     el.className = className;
     return new mapboxgl.Marker(el)
@@ -89,14 +89,14 @@ sample({
     source: $points,
     clock: createdStart,
     target: mapInitPosition,
-    fn: ({selected}) => ({lat: selected.lat, lng: selected.lng, field: 'from'}),
+    fn: ({selected}) => ({lat: selected.lat, lon: selected.lon, field: 'from'}),
 });
 
 sample({
     source: $points,
     clock: createdEnd,
     target: mapInitPosition,
-    fn: ({selected}) => ({lat: selected.lat, lng: selected.lng, field: 'to'}),
+    fn: ({selected}) => ({lat: selected.lat, lon: selected.lon, field: 'to'}),
 });
 
 sample({
@@ -105,7 +105,6 @@ sample({
     fn: ({points, map, config}) => ({points, api: config.api}),
     target: resolvePathType,
 });
-
 const {resolvedDirectPath, resolvedRoundPath} = split(resolvePathType, {
   resolvedDirectPath: ({points}) => points.start && points.end,
   resolvedRoundPath: ({points}) => points.round
@@ -114,12 +113,12 @@ const {resolvedDirectPath, resolvedRoundPath} = split(resolvePathType, {
 forward({
   from: [
     resolvedDirectPath.map(({points, api}) => {
-      const {lat, lon} = points.start.getLngLat();
-      const {lat: endLat, lon: endLng} = points.end.getLngLat();
+      const {lat, lng} = points.start.getLngLat();
+      const {lat: endLat, lng: endLng} = points.end.getLngLat();
       return {
         api,
         points: [{
-            lat, lon
+            lat, lon: lng
           },
           {
             lat: endLat, lon: endLng,
@@ -142,8 +141,7 @@ forward({
   to: getPathFx
 });
 
-
-createdStart.watch((startMarker) => {
+createdStart.watch(({result: startMarker}) => {
     startMarker.getElement().addEventListener('click', (event) => {
         setStartMarkerEvent(null);
         event.stopPropagation();
@@ -151,14 +149,14 @@ createdStart.watch((startMarker) => {
 });
 
 
-createdEnd.watch((endMarker) => {
+createdEnd.watch(({result: endMarker}) => {
     endMarker.getElement().addEventListener('click', (event) => {
         setEndMarkerEvent(null);
         event.stopPropagation();
     });
 });
 
-createdRound.watch((roundMarker) => {
+createdRound.watch(({result: roundMarker}) => {
     roundMarker.getElement().addEventListener('click', (event) => {
         setRoundMarkerEvent(null);
         event.stopPropagation();
