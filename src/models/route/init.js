@@ -34,7 +34,10 @@ $route.on(removeRouteMarkersFx.done, () => {
 // todo: make guard with isDev filter
 forward({
     from: getPathFx.fail.map(({params}) => {
-        return {result: apiGetPathMock(params.points)}}),
+        return {
+          result: apiGetPathMock(params.points)
+        }
+    }),
     to: getPathFx.done
 });
 

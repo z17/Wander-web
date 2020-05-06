@@ -2,24 +2,19 @@ import {default_lat, default_lon} from "./map";
 
 export const apiGetPathMock = (positions) => {
     let type;
-    let start;
-    let end;
     let minLat = 0;
     let maxLat = 0;
     let minLon = 0;
     let maxLon = 0;
-    if (positions.start && positions.end) {
+    const [start, end] = positions;
+    if (end) {
         type = 'direct';
-        start = positions.start.getLngLat();
-        end = positions.end.getLngLat();
         minLat = Math.min(start.lat, end.lat) - 0.03;
         maxLat = Math.max(start.lat, end.lat) + 0.03;
         minLon = Math.min(start.lng, end.lng) - 0.03;
         maxLon = Math.max(start.lng, end.lng) + 0.03;
-    } else if (positions.round) {
+    } else {
         type = 'round';
-        start = positions.round.getLngLat();
-        end = positions.round.getLngLat();
         minLat = start.lat - 0.03;
         maxLat = start.lat + 0.03;
         minLon = start.lng - 0.03;
@@ -33,8 +28,8 @@ export const apiGetPathMock = (positions) => {
         lon: start.lng,
     });
     pathPoints.push({
-        lat: end.lat,
-        lon: end.lng,
+        lat: end ? end.lat : start.lat,
+        lon: end ? end.lng : start.lng,
     });
 
     let id = Math.ceil(Math.random() * 1000);

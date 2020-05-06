@@ -39,7 +39,6 @@ createMapFx.use(({lat, lon, zoom}) => {
         center: [lon, lat],
         zoom
     });
-
     map.on('mouseup', () => {
         mapPositionUpdatedEvent({
             lat: map.getCenter().lat.toFixed(4),
@@ -146,14 +145,12 @@ forward({
 const createdMark = attach({
   source: {map: $map, points: $points},
   effect: createMarkFx,
-  mapParams: (type, {points, map}) => ({className: `App-map_marker_${type}`, map, ...points.selected})
+  mapParams: (type, {points, map}) => ({className: `App-map_marker_${type}`, map: map.map, ...points.selected})
 });
-
 forward({
   from: setPoint,
   to: createdMark
 });
-
 guard({
     source: {config: $config, bounds: mapBoundsUpdatedEvent},
     filter: $noRoute,
