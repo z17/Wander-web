@@ -5,24 +5,21 @@ export const setStartPointEvent = createEvent();
 export const setEndPointEvent = createEvent();
 export const setRoundPointEvent = createEvent();
 export const setPoint = createEvent();
-
 export const setStartMarkerEvent = createEvent();
 export const setEndMarkerEvent = createEvent();
 export const setRoundMarkerEvent = createEvent();
-
+export const mapInitPosition = createEvent();
+export const selectPositionEvent = createEvent();
+export const mapPositionUpdatedEvent = createEvent();
 export const mapBoundsUpdatedEvent = createEvent();
+
 export const getRandomPointsFx = createEffect();
 export const drawLineFx = createEffect();
-
-export const mapInitPosition = createEvent();
-
 export const createMapFx = createEffect();
 export const createObjectMarkersFx = createEffect();
 export const createRouteObjectMarkersFx = createEffect();
 export const removeRouteFromMapFx = createEffect();
 
-export const selectPositionEvent = createEvent();
-export const mapPositionUpdatedEvent = createEvent();
 
 export const MapGate = createGate();
 
