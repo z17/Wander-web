@@ -1,7 +1,7 @@
 import {$map} from "../map/state";
 import {sample, forward} from "effector";
 import {$objects} from "./state";
-import {addObjects, removeObjectsFx, updateRandomObjectsEvent} from "./index";
+import {addObjects, removeObjectsFx, updateRandomObjectsEvent} from "./";
 import {createObjectMarkersFx} from "../map";
 
 removeObjectsFx.use(({objects, points}) => {
@@ -11,7 +11,7 @@ removeObjectsFx.use(({objects, points}) => {
     });
     return points;
 });
-
+addObjects.watch(console.log);
 $objects.on(addObjects, (state, objects) => {
     return objects
 });

@@ -1,4 +1,3 @@
-import {createStartPointFx, createEndPointFx, createRoundPointFx} from  "./"
 import mapboxgl from "mapbox-gl";
 import {forward, sample, split, attach} from "effector"
 import {$points} from "./state";
@@ -22,7 +21,7 @@ createMarkFx.use(({lat, lng, className, map}) => {
         .setLngLat(mark)
         .addTo(map);
 });
-
+createMarkFx.watch(console.log);
 $points.on(selectPositionEvent, (state, value) => {
     return {
         ...state,

@@ -56,10 +56,12 @@ createMapFx.use(({lat, lon, zoom}) => {
 
 const createObjectMarkers = ({objects, map}) => {
     return objects.map((object) => {
-        const {lat, lon} = object;
-          return {data: object, marker: createdPointMark(lat, lon, map)}
+        const {lat, lon: lng} = object;
+          return {data: object, marker: createdPointMark({lat, lng, map})}
     });
 };
+createObjectMarkersFx.watch(console.log);
+createdPointMark.watch(console.log);
 
 createRouteObjectMarkersFx.use(createObjectMarkers);
 createObjectMarkersFx.use(createObjectMarkers);
@@ -71,6 +73,12 @@ getRandomPointsFx.use(async ({bounds, api}) => {
     const res = await fetch(`${api}objects/getFeatured/${boundsAsURLParams}`);
     return res.json();
 });
+const getRandomPointsFxWithApi = attach({
+  source: {config: $config},
+  effect: getRandomPointsFx,
+  mapParams: (bounds, {config}) => ({bounds, api: config.api})
+});
+getRandomPointsFx.done.watch(console.log);
 
 removeRouteFromMapFx.use(({map, route}) => {
     let old_route_map_id = 'route' + route.id;
@@ -152,10 +160,9 @@ forward({
   to: createdMark
 });
 guard({
-    source: {config: $config, bounds: mapBoundsUpdatedEvent},
+    source: mapBoundsUpdatedEvent,
     filter: $noRoute,
-    fn: ({config, bounds}) => ({api: config.api, bounds}),
-    target: getRandomPointsFx
+    target: getRandomPointsFxWithApi
 });
 
 const setAnyPositionMarker = merge([setStartMarkerEvent, setEndMarkerEvent, setRoundMarkerEvent]);
