@@ -6,7 +6,7 @@ import './BuildForm.css';
 const BuildForm = () => {
 
     const {from_text, to_text} = useStore($buildForm);
-
+    
     return (
         <div className="App-sidebar__build_container">
             <div className="App-sidebar__title-block">

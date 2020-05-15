@@ -11,7 +11,7 @@ removeObjectsFx.use(({objects, points}) => {
     });
     return points;
 });
-addObjects.watch(console.log);
+
 $objects.on(addObjects, (state, objects) => {
     return objects
 });

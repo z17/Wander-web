@@ -8,17 +8,18 @@ const geocodingService = mbxGeocoding({accessToken: mapbox_access_key});
 
 getTextByCoordinatesFx.use(async (lngLat) => {
         return await geocodingService.reverseGeocode({
-            query: [lngLat.lng, lngLat.lat],
+            query: [lngLat.lon, lngLat.lat],
             types: ['address'],
             limit: 1,
             language: ['ru']
         }).send();
     }
 );
+getTextByCoordinatesFx.watch(console.log);
 
 const textByCoordinates = getTextByCoordinatesFx.done.map(({params, result}) => {
     const match = result.body;
-    let text = params.lat + ' ' + params.lng;
+    let text = params.lat + ' ' + params.lon;
     if (match.features[0]) {
         const address = match.features[0].address || '';
         text = match.features[0].text + ' ' + address;
