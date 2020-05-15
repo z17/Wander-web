@@ -48,13 +48,13 @@ forward({
 
 forward({
   from: getPathFx.doneData.map((route) => {
-    const points = route.points || route.points.map(({lat, lon}) => {
+    const points = route.points ? route.points.map(({lat, lon}) => {
       return {
         lat,
         lon
       };
-    });
-    const objects = route.objects || route.objects.map((object) => {
+    }) : [];
+    const objects = route.objects ? route.objects.map((object) => {
       return {
         id: object.id,
         title: object.title,
@@ -64,7 +64,7 @@ forward({
         image: object.image,
         description: object.description
       };
-    });
+    }) : [];
     return {
       points,
       objects,

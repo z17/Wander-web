@@ -4,5 +4,3 @@ export const $buildForm = createStore({
     from_text: null,
     to_text: null,
 });
-
-$buildForm.watch(console.log);

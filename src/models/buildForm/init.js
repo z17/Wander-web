@@ -15,7 +15,6 @@ getTextByCoordinatesFx.use(async (lngLat) => {
         }).send();
     }
 );
-getTextByCoordinatesFx.watch(console.log);
 
 const textByCoordinates = getTextByCoordinatesFx.done.map(({params, result}) => {
     const match = result.body;

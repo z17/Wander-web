@@ -21,7 +21,7 @@ import {
 } from "./index";
 import {
   createEndPointFx, createRoundPointFx, createdStartMark, createdEndMark,
-  createdRoundMark, createdPointMark, pathPositionsReady, createMarkFx
+  createdRoundMark, pathPositionsReady, createMarkFx
 } from "../points";
 import {$points, $routePositionsReady} from "../points/state";
 import {$map, $mapSettings} from "./state";
@@ -54,11 +54,12 @@ createMapFx.use(({lat, lon, zoom}) => {
     return {map}
 });
 
-const createObjectMarkers = ({objects, map}) => {
-    return objects.map((object) => {
+const createObjectMarkers = async ({objects, map}) => {
+    const resolvedObjects = objects.map(async (object) => {
         const {lat, lon: lng} = object;
-          return {data: object, marker: createdPointMark({lat, lng, map})}
+        return {data: object, marker: await createMarkFx({lat, lng, map, className: 'App-map_marker_point'})}
     });
+    return await Promise.all(resolvedObjects);
 };
 
 createRouteObjectMarkersFx.use(createObjectMarkers);
@@ -152,10 +153,12 @@ const createdMark = attach({
   effect: createMarkFx,
   mapParams: (type, {points, map}) => ({className: `App-map_marker_${type}`, map: map.map, ...points.selected})
 });
+
 forward({
   from: setPoint,
   to: createdMark
 });
+
 guard({
     source: mapBoundsUpdatedEvent,
     filter: $noRoute,
