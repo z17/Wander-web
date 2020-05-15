@@ -4,14 +4,16 @@ import {$objects} from "./state";
 import {addObjects, removeObjectsFx, updateRandomObjectsEvent} from "./";
 import {createObjectMarkersFx} from "../map";
 
-removeObjectsFx.use(({objects, points}) => {
+removeObjectsFx.use(async ({objects, points}) => {
     // todo: make something with points
-    objects.forEach(function (object) {
+    objects.forEach(async function (object) {
+        console.log(object.marker)
         object.marker.remove();
     });
     return points;
 });
 
+removeObjectsFx.watch(console.log)
 $objects.on(addObjects, (state, objects) => {
     return objects
 });
