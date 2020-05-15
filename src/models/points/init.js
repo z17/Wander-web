@@ -21,7 +21,7 @@ createMarkFx.use(({lat, lng, className, map}) => {
         .setLngLat(mark)
         .addTo(map);
 });
-createMarkFx.watch(console.log);
+
 $points.on(selectPositionEvent, (state, value) => {
     return {
         ...state,
@@ -88,14 +88,14 @@ sample({
     source: $points,
     clock: createdStart,
     target: mapInitPosition,
-    fn: ({selected}) => ({lat: selected.lat, lon: selected.lon, field: 'from'}),
+    fn: ({selected}) => ({lat: selected.lat, lon: selected.lng, field: 'from'}),
 });
 
 sample({
     source: $points,
     clock: createdEnd,
     target: mapInitPosition,
-    fn: ({selected}) => ({lat: selected.lat, lon: selected.lon, field: 'to'}),
+    fn: ({selected}) => ({lat: selected.lat, lon: selected.lng, field: 'to'}),
 });
 
 sample({

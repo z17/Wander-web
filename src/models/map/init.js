@@ -60,8 +60,6 @@ const createObjectMarkers = ({objects, map}) => {
           return {data: object, marker: createdPointMark({lat, lng, map})}
     });
 };
-createObjectMarkersFx.watch(console.log);
-createdPointMark.watch(console.log);
 
 createRouteObjectMarkersFx.use(createObjectMarkers);
 createObjectMarkersFx.use(createObjectMarkers);
@@ -78,7 +76,6 @@ const getRandomPointsFxWithApi = attach({
   effect: getRandomPointsFx,
   mapParams: (bounds, {config}) => ({bounds, api: config.api})
 });
-getRandomPointsFx.done.watch(console.log);
 
 removeRouteFromMapFx.use(({map, route}) => {
     let old_route_map_id = 'route' + route.id;
