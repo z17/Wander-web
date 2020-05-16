@@ -1,5 +1,5 @@
 import mapboxgl from "mapbox-gl";
-import {forward, sample, split, attach} from "effector"
+import {forward, sample, split} from "effector"
 import {$points} from "./state";
 import {$config} from '../app/state';
 import {
@@ -10,7 +10,6 @@ import {
     selectPositionEvent
 } from "../map";
 import {pathPositionsReady, createMarkFx, resolvePathType} from "./";
-import {$map} from "../map/state";
 import {getPathFx} from "../route";
 
 createMarkFx.use(({lat, lng, className, map}) => {
@@ -53,11 +52,12 @@ $points.on(selectPositionEvent, (state, value) => {
     }
 });
 
-const {createdStart, createdEnd, createdPoint, __: createdRound} = split(createMarkFx.done, {
+const {createdStart, createdEnd, createdPoint, createdRound} = split(createMarkFx.done, {
   createdStart: ({params}) => params.className === 'App-map_marker_start',
   createdEnd: ({params}) => params.className === 'App-map_marker_end',
-  createdPoint: ({params}) => params.className === 'App-map_marker_point'
-})
+  createdPoint: ({params}) => params.className === 'App-map_marker_point',
+  createdRound: ({params}) => params.className === 'App-map_marker_round'
+});
 
 forward({
     from: [
@@ -104,10 +104,11 @@ sample({
     fn: ({points, map, config}) => ({points, api: config.api}),
     target: resolvePathType,
 });
+
 const {resolvedDirectPath, resolvedRoundPath} = split(resolvePathType, {
   resolvedDirectPath: ({points}) => points.start && points.end,
   resolvedRoundPath: ({points}) => points.round
-})
+});
 
 forward({
   from: [

@@ -1,7 +1,6 @@
 import {apiGetPathMock} from "../mocks";
 import {createRouteEvent, filledRoute, getPathFx, removeRouteEvent, removeRouteMarkersFx} from './index'
 import {updateRandomObjectsEvent} from "../objects";
-import {pointsParse} from '../points';
 import {$route} from './state'
 import {$map} from "../map/state";
 import {createRouteObjectMarkersFx, drawLineFx, removeRouteFromMapFx} from "../map";
