@@ -1,10 +1,7 @@
-import {guard, merge, sample, forward, attach} from "effector";
+import {guard, merge, forward, attach} from "effector";
 import mapboxgl from "mapbox-gl";
 import {
   createMapFx,
-  setEndPointEvent,
-  setRoundPointEvent,
-  setStartPointEvent,
   setPoint,
   createObjectMarkersFx,
   createRouteObjectMarkersFx,
@@ -20,8 +17,8 @@ import {
   MapGate
 } from "./index";
 import {
-  createEndPointFx, createRoundPointFx, createdStartMark, createdEndMark,
-  createdRoundMark, pathPositionsReady, createMarkFx
+  pathPositionsReady,
+  createMarkFx
 } from "../points";
 import {$points, $routePositionsReady} from "../points/state";
 import {$map, $mapSettings} from "./state";

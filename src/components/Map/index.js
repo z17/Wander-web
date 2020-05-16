@@ -3,9 +3,6 @@ import {useStore, useGate} from 'effector-react'
 
 import './Map.css';
 import {
-    setEndPointEvent,
-    setRoundPointEvent,
-    setStartPointEvent,
     setPoint
 } from "../../models/map";
 import {$points} from "../../models/points/state";
@@ -22,9 +19,7 @@ export const Map = () => {
                 <div>Longitude: {mapSettings.lon} | Latitude: {mapSettings.lat} | Zoom: {mapSettings.zoom}</div>
             </div>
             {points.selected && <div className="App-map__menu">
-                <button onClick={() => {
-                  setPoint('start')
-                }} className="App-map__menu_button">From</button>
+                <button onClick={() => setPoint('start')} className="App-map__menu_button">From</button>
                 <button onClick={() => setPoint('end')} className="App-map__menu_button">To</button>
                 <button onClick={() => setPoint('round')} className="App-map__menu_button">Round</button>
             </div>}
