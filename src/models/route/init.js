@@ -1,4 +1,5 @@
 import {apiGetPathMock} from "../mocks";
+import {apiParseObject} from '../app';
 import {createRouteEvent, filledRoute, getPathFx, removeRouteEvent, removeRouteMarkersFx} from './index'
 import {updateRandomObjectsEvent} from "../objects";
 import {pointsParse} from '../points';
@@ -54,17 +55,7 @@ forward({
         lon
       };
     }) : [];
-    const objects = route.objects ? route.objects.map((object) => {
-      return {
-        id: object.id,
-        title: object.title,
-        type: object.type,
-        lat: object.position.lat,
-        lon: object.position.lon,
-        image: object.image,
-        description: object.description
-      };
-    }) : [];
+    const objects = route.objects ? route.objects.map(apiParseObject) : [];
     return {
       points,
       objects,
