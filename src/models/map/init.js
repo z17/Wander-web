@@ -23,7 +23,7 @@ import {
 import {$points, $routePositionsReady} from "../points/state";
 import {$map, $mapSettings} from "./state";
 import {$noRoute} from '../route/state';
-import {objectsParse} from '../app';
+import {objectsParse} from '../objects';
 import {$config} from '../app/state';
 import {apiGetFeaturedMock} from "../mocks";
 
