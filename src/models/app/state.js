@@ -1,3 +1,3 @@
 import {createStore} from 'effector';
 
-export const $config = createStore({})
+export const $config = createStore({});
